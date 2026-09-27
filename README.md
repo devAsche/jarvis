@@ -46,6 +46,31 @@ git worktree add C:\AI\jarvis-codex -b feat/backend-foundation
 
 初日は同時稼働させず、AntigravityでM1の画面・API契約を完成 → Codexに別ブランチで検証と基盤開発を任せる順序が安全。
 
+### ローカル起動・検証コマンド (M0/M1)
+
+```powershell
+# 依存関係のインストール（初回のみ）
+npm install
+
+# 開発サーバー起動（http://localhost:3000）
+npm run dev
+
+# 型チェック（TypeScript）
+npm run typecheck
+
+# 契約・スキーマの単体テスト
+npm run test
+
+# 静的コード解析 (ESLint)
+npm run lint
+
+# 本番ビルド検証
+npm run build
+
+# WindowsローカルEdgeを用いた自動スクリーンショット取得（1440x900 & 390x844）
+npm run qa:screenshots
+```
+
 ## 収録ドキュメント案内
 
 | ファイル | 役割 |
