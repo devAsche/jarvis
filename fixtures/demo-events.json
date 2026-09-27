@@ -1,0 +1,4 @@
+[
+  {"event_id":"demo_001","source":"fixture.shopify","type":"commerce.order.paid","mode":"DEMO","occurred_at":"2026-09-28T08:58:00+09:00","received_at":"2026-09-28T08:58:02+09:00","correlation_id":"demo-order-001","data":{"order_id":"demo-order-001","amount_minor":4900,"currency":"JPY"}},
+  {"event_id":"demo_002","source":"fixture.gmail","type":"creative.mix.lead","mode":"DEMO","occurred_at":"2026-09-28T09:01:00+09:00","received_at":"2026-09-28T09:01:02+09:00","correlation_id":"demo-mix-001","data":{"request_id":"demo-mix-001","attachments_complete":false}}
+]

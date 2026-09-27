@@ -1,0 +1,19 @@
+node_modules/
+.next/
+dist/
+coverage/
+playwright-report/
+test-results/
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.key
+*.log
+.DS_Store
+Thumbs.db
+# private reel reference is for local design review only
+references/monitor_crop.jpg
+# local screenshots may contain real customer information in future
+screenshots/private/

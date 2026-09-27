@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "JARVIS Business OS / Concept Design Tokens",
+  "status": "proposal-demo-not-final",
+  "colors": {
+    "background": "#050B17",
+    "surface": "#101B31",
+    "primaryText": "#E1F6FF",
+    "secondaryText": "#8AA4C3",
+    "cyan": "#52D8FF",
+    "indigo": "#5174FF",
+    "amber": "#FFBE76",
+    "success": "#81FFE1"
+  },
+  "radius": {"cardPx": 15, "buttonPx": 7},
+  "modes": ["PRESENCE", "BRIEFING", "DASHBOARD", "APPROVAL_CENTER"],
+  "states": ["IDLE", "LISTENING", "THINKING", "SPEAKING", "EXECUTING", "AWAITING_APPROVAL", "OFFLINE", "ERROR"],
+  "dataProvenance": ["DEMO", "LIVE_VERIFIED", "STALE", "UNKNOWN"],
+  "breakpoints": {"mobileMaxPx": 560, "tabletMaxPx": 850},
+  "reducedMotion": "disable-looping-animations-preserve-status-text"
+}

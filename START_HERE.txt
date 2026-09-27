@@ -1,0 +1,15 @@
+JARVIS Business OS — セットアップ最短手順
+
+1. このZIPを C:\AI に展開し、C:\AI\jarvis を作る。
+   既にC:\AI\jarvisがある場合は上書きせず、既存repoを確認する。
+2. C:\AI\jarvis\README.md を読む。PowerShellで scripts\bootstrap.ps1 を実行し環境をチェック。
+3. Antigravityで C:\AI\jarvis を開き、prompts\ANTIGRAVITY_INITIAL.md の全文を渡す。
+4. Antigravityの初期実装後にCodexへ prompts\CODEX_INITIAL.md を渡す。
+   並行させる場合はGitの最初のコミット後、別worktree(C:\AI\jarvis-codex)を作る。
+
+共通ルール: AGENTS.md
+仕様: docs/00_PROJECT_CONTEXT.md 〜 docs/11_EVIDENCE_AND_UNKNOWN.md
+現在の進捗: docs/HANDOFF.md、docs/TASK_BOARD.md、docs/WORK_LOG.md
+ブラウザーで見るUI試作品: prototype/index.html（完全デモ）
+
+このファイル一式は完成アプリではなく、両エージェントで開発を始めるための資料・起動プロンプト・画面サンプルです。

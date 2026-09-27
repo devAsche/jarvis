@@ -1,0 +1,13 @@
+{
+  "date": "2026-09-28",
+  "timezone": "Asia/Tokyo",
+  "data_mode": "DEMO",
+  "generated_at": "2026-09-28T09:30:00+09:00",
+  "disclaimer": "DEMO ONLY. Sample data; not connected to any real business account.",
+  "sections": [
+    {"kind":"anomalies","title":"Past 24 hours","items":[{"id":"demo_shipping_alert","headline":"One sample order may exceed its shipping estimate","source":"fixture.shopify","confidence":"demo"}],"sources":["fixture.shopify"]},
+    {"kind":"schedule","title":"Today","items":[{"id":"demo_focus","headline":"A two-hour focus block is available in the demo calendar","source":"fixture.calendar","confidence":"demo"}],"sources":["fixture.calendar"]},
+    {"kind":"pending","title":"Pending","items":[{"id":"demo_mix","headline":"Two sample MIX inquiries await draft replies","source":"fixture.gmail","confidence":"demo"}],"sources":["fixture.gmail"]},
+    {"kind":"suggestions","title":"Deep work","items":[{"id":"demo_deepwork","headline":"Review the product page before planning additional ad experiments","source":"demo-rule","confidence":"demo"}],"sources":["demo-rule"]}
+  ]
+}
