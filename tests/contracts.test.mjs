@@ -6,6 +6,11 @@ import {
   SourceEventEnvelopeSchema,
   MorningBriefingSchema,
   ApprovalItemSchema,
+  CoreStateSchema,
+  CoreVisualStateSchema,
+  toCoreVisualState,
+  toCoreState,
+  UIEventSchema,
 } from "../src/contracts/index.ts";
 
 test("Contract Schema: DataMode verifies DEMO and rejects invalid modes", () => {
@@ -97,4 +102,30 @@ test("Negative Test: ApprovalItem rejects non-whitelisted status", () => {
     status: "auto_executed_by_ai", // Forbidden!
   };
   assert.throws(() => ApprovalItemSchema.parse(invalidApproval));
+});
+
+test("CR-001: CoreState and CoreVisualState handle all states including DELEGATING", () => {
+  assert.equal(CoreStateSchema.parse("DELEGATING"), "DELEGATING");
+  assert.equal(CoreVisualStateSchema.parse("delegating"), "delegating");
+  assert.equal(toCoreVisualState("DELEGATING"), "delegating");
+  assert.equal(toCoreState("delegating"), "DELEGATING");
+  assert.throws(() => CoreVisualStateSchema.parse("unregistered_state"));
+});
+
+test("CR-001: UIEvent validates structure and audioLevel bounds", () => {
+  const validEvent = {
+    eventId: "evt-001",
+    occurredAt: new Date().toISOString(),
+    source: "audio",
+    state: "listening",
+    demo: true,
+    audioLevel: 0.75,
+    message: "マイク入力検知（シミュレーション）",
+  };
+  const parsed = UIEventSchema.parse(validEvent);
+  assert.equal(parsed.state, "listening");
+  assert.equal(parsed.audioLevel, 0.75);
+
+  // Negative test: audioLevel out of bounds
+  assert.throws(() => UIEventSchema.parse({ ...validEvent, audioLevel: 1.5 }));
 });

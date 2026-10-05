@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { ApprovalItem } from "../contracts";
+import { useDialogFocus } from "../lib/useDialogFocus";
 
 interface ApprovalModalProps {
   item: ApprovalItem;
@@ -16,21 +17,13 @@ export function ApprovalModal({
   onApprove,
   onReject,
 }: ApprovalModalProps) {
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useDialogFocus(onClose);
   const isPending = item.status === "pending";
-
-  useEffect(() => {
-    closeBtnRef.current?.focus();
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
 
   return (
     <div
       className="modal-overlay"
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="approval-modal-title"
@@ -40,32 +33,37 @@ export function ApprovalModal({
     >
       <div className="modal-window">
         <div className="modal-header">
-          <h2 id="approval-modal-title">APPROVAL CENTER / DEMO</h2>
+          <h2 id="approval-modal-title">配送費の確認 · DEMO</h2>
           <button
-            ref={closeBtnRef}
             className="modal-close-btn"
             onClick={onClose}
             aria-label="閉じる"
           >
-            ✕ CLOSE
+            閉じる
           </button>
         </div>
 
-        <span className="pill-tag">NO REAL PURCHASE</span>
+        <span className="pill-tag">実際の発注・支払いなし</span>
 
         <div className="approval-box">
           <div className="section-kicker">
-            FIXTURE.SHOPIFY · {item.target_id}
+            サンプル注文 · {item.target_id}
           </div>
-          <strong>{item.title}</strong>
+          <strong>サンプル注文の配送費差額</strong>
           <p className="narrative-block">
             対象: {item.account} / 注文額: ¥{item.amount_cap_minor.toLocaleString()}（サンプル）
             <br />
-            {item.description}
+            見積 ¥900 に対し、配送費の提示額は ¥1,550 です。差額 ¥650 を確認してください。ここで判断を記録しても、実際の発注・支払い・出荷は行いません。
           </p>
           <div className="tiny-label" style={{ margin: "10px 0" }}>
-            ACTION: {item.action_type} • EFFECT: NONE • STATE: {item.status.toUpperCase()}
+            模擬判断 · 外部への効果なし · {item.status === "pending" ? "確認待ち" : item.status === "approved" ? "模擬承認済み" : item.status === "rejected" ? "模擬拒否済み" : item.status}
           </div>
+          <div className="tiny-label" style={{ margin: "10px 0" }}>
+            根拠: サンプル注文の配送費提示額が見積を ¥650 上回っています。
+            <br />
+            確認期限: {new Date(item.expires_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })} JST
+          </div>
+          <details className="approval-source-detail"><summary>元データを確認</summary><p>{item.title} · {item.reason}</p><p>{item.description}</p></details>
 
           {isPending ? (
             <div className="button-row" style={{ marginTop: "14px" }}>
@@ -73,35 +71,35 @@ export function ApprovalModal({
                 className="cyber-btn primary"
                 onClick={() => onApprove(item.intent_id)}
               >
-                APPROVE (SIMULATED)
+                模擬承認を記録
               </button>
               <button
                 className="cyber-btn gold"
                 onClick={() => onReject(item.intent_id)}
               >
-                REJECT (SIMULATED)
+                模擬拒否を記録
               </button>
             </div>
           ) : (
             <div className="modal-notice" style={{ marginTop: "14px" }}>
-              Decision recorded locally ({item.status.toUpperCase()}). No external action executed.
+              模擬判断をローカルに記録しました。外部操作はありません。
             </div>
           )}
         </div>
 
         <div className="narrative-block">
           <p>
-            <b>本番実装の安全設計:</b>
+            <b>このデモの安全条件:</b>
           </p>
           <ul style={{ fontSize: "12px", color: "#a5c2d7" }}>
             <li>音声入力の「はい」のみでは高リスク操作（発注/出金/広告変更）を実行しません。</li>
-            <li>承認画面で対象ID、固定payload hash、有効期限、金額上限を検証します。</li>
-            <li>承認後に内容が改ざんされた場合、サーバー側の照合で即座に拒絶されます。</li>
+            <li>このdemoでは対象ID、固定項目、有効期限、金額をサーバー側で照合します。</li>
+            <li>同じ承認の再送や内容差替えは拒否されます。実行権限はありません。</li>
           </ul>
         </div>
 
         <p style={{ marginTop: "14px", fontSize: "11px", color: "#7b9bb1" }}>
-          OFFLINE VISUAL PROTOTYPE • NO API CALLS • NO BUSINESS ACTIONS
+          ローカルのサンプルのみ · 実サービスへの書込みなし
         </p>
       </div>
     </div>

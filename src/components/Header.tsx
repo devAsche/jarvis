@@ -25,26 +25,19 @@ export function Header() {
   return (
     <header className="top-header" role="banner">
       <div className="brand">
-        <div className="brandmark" aria-hidden="true">
-          <span>✦</span>
-        </div>
+        <div className="brandmark" aria-hidden="true"><span>✦</span></div>
         <div>
-          <h1 className="wordmark">
-            JARVIS{" "}
-            <span style={{ color: "#55bee6", fontSize: "10px", letterSpacing: "0.13em" }}>
-              BUSINESS OS
-            </span>
-          </h1>
-          <div className="sub-title">PERSONAL OPERATIONS INTERFACE // M0 FOUNDATION</div>
+          <h1 className="wordmark">JARVIS <span>Business OS</span></h1>
+          <div className="sub-title">今日の判断と業務の状況</div>
         </div>
       </div>
       <div className="top-right">
-        <span className="demo-badge">● DEMO DATA ONLY</span>
+        <span className="demo-badge">DEMO · 実サービス未接続</span>
         <div>
           <div className="clock-display" aria-label="Current Tokyo Time">
             {clockText}
           </div>
-          <div className="tiny-label">TOKYO / JAPAN</div>
+          <div className="tiny-label">東京</div>
         </div>
       </div>
     </header>

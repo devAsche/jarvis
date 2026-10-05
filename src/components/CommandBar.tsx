@@ -20,7 +20,7 @@ export function CommandBar({ onCommandSubmit }: CommandBarProps) {
     <footer className="bottom-footer" role="contentinfo">
       <div className="footer-label">
         <span className="glowing-dot" />
-        COMMAND CHANNEL
+        指示を入力
       </div>
 
       <form className="command-container" onSubmit={handleSubmit}>
@@ -34,14 +34,14 @@ export function CommandBar({ onCommandSubmit }: CommandBarProps) {
           autoComplete="off"
           value={inputVal}
           onChange={(e) => setInputVal(e.target.value)}
-          placeholder="例：朝の報告 / 注文 / ダッシュボード / 承認 / ステータス"
+          placeholder="例：朝の報告 / 承認 / ダッシュボード"
         />
         <button type="submit" className="cyber-btn primary">
-          SEND ↗
+          送信 ↗
         </button>
       </form>
 
-      <span className="system-foot-note">ALL EXTERNAL EFFECTS LOCKED</span>
+      <span className="system-foot-note">外部操作は無効です</span>
     </footer>
   );
 }

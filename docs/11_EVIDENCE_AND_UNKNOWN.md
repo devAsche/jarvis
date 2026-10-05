@@ -18,9 +18,9 @@
 
 ## 設計仮説（利用者による最終承認待ちでも、モック開発を進められる範囲）
 
-- `C:\AI\jarvis` をリポジトリとする。作業名JARVIS Business OSは社内用仮称。UIパレットやコンポーネント配置は映像からの独自解釈。
+- 作業名JARVIS Business OSは社内用仮称。UIパレットやコンポーネント配置は映像からの独自解釈。Gitルートは作業時に `git rev-parse --show-toplevel` で確認する（2026-09-28時点は `C:\AI\jarvis\JARVIS_C_AI_Starter\jarvis`）。
 - Windows 1人利用、Asia/Tokyoを初期TZ、英語APIと日本語UI/音声が中心。日本語・英語切替は後日。
-- Next.js/TypeScript + PostgreSQL、最初にブラウザーTTSとCSSコア、安定後3D/WebGPUを検討。
+- CR-001で中央PresenceコアはR3F/Three.js先行に変更。CSSコアはWebGL非対応・低モーション・手動省電力時のfallback。音声はMockVoiceAdapter先行、ブラウザーTTSは任意の読み上げ補助。PostgreSQLと実API接続は後続フェーズ。
 
 ## 未確認（推測として処理しない）
 

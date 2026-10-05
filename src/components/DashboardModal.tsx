@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { BusinessSummary } from "../contracts";
+import { useDialogFocus } from "../lib/useDialogFocus";
 
 interface DashboardModalProps {
   summary: BusinessSummary;
@@ -9,21 +10,13 @@ interface DashboardModalProps {
 }
 
 export function DashboardModal({ summary, onClose }: DashboardModalProps) {
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useDialogFocus(onClose);
   const [activeTab, setActiveTab] = useState<"overview" | "commerce" | "creative" | "security">("overview");
-
-  useEffect(() => {
-    closeBtnRef.current?.focus();
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
 
   return (
     <div
       className="modal-overlay"
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="dashboard-modal-title"
@@ -33,21 +26,20 @@ export function DashboardModal({ summary, onClose }: DashboardModalProps) {
     >
       <div className="modal-window">
         <div className="modal-header">
-          <h2 id="dashboard-modal-title">OPERATIONS / DASHBOARD</h2>
+          <h2 id="dashboard-modal-title">事業別の数字 · DEMO</h2>
           <button
-            ref={closeBtnRef}
             className="modal-close-btn"
             onClick={onClose}
             aria-label="閉じる"
           >
-            ✕ CLOSE
+            閉じる
           </button>
         </div>
 
         <div style={{ display: "flex", gap: "8px", marginBottom: "16px", alignItems: "center" }}>
-          <span className="pill-tag">NOT CONNECTED</span>
+          <span className="pill-tag">実サービス未接続</span>
           <span className="pill-tag" style={{ borderColor: "#64b6e5", color: "#b3e5fc" }}>
-            MODE: DEMO
+            サンプル表示
           </span>
         </div>
 
@@ -56,70 +48,68 @@ export function DashboardModal({ summary, onClose }: DashboardModalProps) {
             className={`cyber-btn ${activeTab === "overview" ? "primary" : ""}`}
             onClick={() => setActiveTab("overview")}
           >
-            OVERVIEW
+            全体
           </button>
           <button
             className={`cyber-btn ${activeTab === "commerce" ? "primary" : ""}`}
             onClick={() => setActiveTab("commerce")}
           >
-            COMMERCE
+            注文
           </button>
           <button
             className={`cyber-btn ${activeTab === "creative" ? "primary" : ""}`}
             onClick={() => setActiveTab("creative")}
           >
-            CREATIVE
+            制作
           </button>
           <button
             className={`cyber-btn ${activeTab === "security" ? "primary" : ""}`}
             onClick={() => setActiveTab("security")}
           >
-            SECURITY
+            安全
           </button>
         </div>
 
         <div className="card-grid-2">
           <div className="stat-card">
-            <small>COMMERCE / SAMPLE ORDER REVENUE</small>
+            <small>サンプル注文額 · 実売上ではありません</small>
             <strong>
               {summary.order_revenue_currency === "JPY" ? "¥" : "$"}
               {summary.order_revenue_minor.toLocaleString()}
             </strong>
-            <small>NET PROFIT: UNKNOWN (NO COST DATA)</small>
+            <small>純利益: 不明（原価データなし）</small>
           </div>
           <div className="stat-card">
-            <small>CREATIVE / SAMPLE LEADS</small>
+            <small>制作問い合わせの例</small>
             <strong>
               {summary.mix_inquiries_count < 10 ? `0${summary.mix_inquiries_count}` : summary.mix_inquiries_count}
             </strong>
-            <small>0 EMAILS SENT (HUMAN REVIEW REQUIRED)</small>
+            <small>送信メール0件 · 本人確認が必要</small>
           </div>
           <div className="stat-card">
-            <small>EXECUTIVE ASSISTANT</small>
+            <small>予定表の実接続</small>
             <strong>0</strong>
-            <small>REAL CALENDAR CONNECTIONS</small>
+            <small>未接続</small>
           </div>
           <div className="stat-card">
-            <small>SECURITY / EXTERNAL EFFECTS</small>
-            <strong>LOCKED</strong>
-            <small>APPROVAL-GATED DESIGN</small>
+            <small>外部への操作</small>
+            <strong>無効</strong>
+            <small>このデモから実行できません</small>
           </div>
         </div>
 
         <div className="narrative-block">
           <p>
-            実装フェーズ（M2以降）では各指標に最終同期時刻・一次データ・欠損項目を表示します。
-            データ不足時に推定利益を確定値として扱いません。
+            これらの数値はサンプルです。最終同期はなく、純利益を計算するための原価データもありません。
           </p>
           <ul style={{ fontSize: "12px", color: "#a5c2d7" }}>
-            <li><b>Shopify連携:</b> 注文通知の冪等性チェックと利益計算アダプターをM2で接続</li>
-            <li><b>Mix/制作問い合わせ:</b> 受信構造化と返信下書きの作成までを許可し、送信は本人承認制</li>
-            <li><b>API予算管理:</b> AIモデル利用料金上限と月次推論コストを常時監視</li>
+            <li>注文・メール・予定表はすべて未接続です。</li>
+            <li>模擬承認は外部サービスへの実行権限を持ちません。</li>
           </ul>
         </div>
 
         <p style={{ marginTop: "14px", fontSize: "11px", color: "#7b9bb1" }}>
-          OFFLINE VISUAL PROTOTYPE • NO API CALLS • NO BUSINESS ACTIONS
+          DEMO · 実サービスへの書込みなし
         </p>
       </div>
     </div>

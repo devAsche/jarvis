@@ -13,7 +13,7 @@
 ### 画面A: PRESENCE（デフォルト）
 
 - 全画面ダークネイビー `#050B17` を基盤。微細グリッド、周辺ビネット、低コントラスト星屑（CPU/GPU節約）。差し色 `#54D4FF`、補助 `#7E82FF`、警告 `#FFBF76`。
-- 中央に重層リング + 反応型Core。モックではCSS/SVGで開始。ブラウザー負荷/画質が合格した後、必要に応じThree.jsの3Dシェーダーで置き換える。単なる回転動画に依存しない。
+- 中央に重層リング + 反応型Core。初期M0/M1から React Three Fiber (R3F) + Three.js で先行実装。暗いネイビー背景、青白い発光球体、層状回転リング、控えめな粒子（Marvel模倣なしの独自デザイン）。WebGL非対応・prefers-reduced-motion・省電力設定時は軽量なCSS/SVG 2D fallbackに切り替える。Canvasは中央コア専用とし、周囲のUIやテキスト、数値、承認、字幕はすべてHTML DOM/CSSで構成。単なる回転動画に依存しない。
 - 左側：CONNECTIONS（EC/メール/予定/ToDo）、EVENT FEED（新着/失敗/同期時刻）。連携未設定はNOT CONNECTED。
 - 右側：BUSINESS OVERVIEW（ECの実測数値と不明値、MIX進行、重要アラート）、AGENT STATUS（実際のワーカー状態）。
 - 上部：ローカル日時 Asia/Tokyo、SYSTEM STATE、DEMO/LIVE明示、集中/通知状態。

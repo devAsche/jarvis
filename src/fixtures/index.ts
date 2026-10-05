@@ -1,16 +1,16 @@
-import {
+import type {
   MorningBriefing,
   SourceEventEnvelope,
   ApprovalItem,
   BusinessSummary,
   SystemStatus,
-} from "../contracts";
+} from "../contracts/index.ts";
 
 export const initialBriefing: MorningBriefing = {
   date: "2026-09-28",
   timezone: "Asia/Tokyo",
   data_mode: "DEMO",
-  generated_at: "2026-09-28T09:30:00+09:00",
+  generated_at: "2026-09-28T00:30:00+09:00",
   disclaimer: "DEMO ONLY. Sample data; not connected to any real business account.",
   sections: [
     {
@@ -74,23 +74,47 @@ export const initialEvents: SourceEventEnvelope[] = [
     source: "fixture.shopify",
     type: "commerce.order.paid",
     mode: "DEMO",
-    occurred_at: "2026-09-28T08:58:00+09:00",
-    received_at: "2026-09-28T08:58:02+09:00",
+    occurred_at: "2026-09-28T00:00:00+09:00",
+    received_at: "2026-09-28T00:00:02+09:00",
     source_freshness: "DEMO",
     correlation_id: "demo-order-001",
     data: {
       order_id: "demo-order-001",
       amount_minor: 4900,
       currency: "JPY",
+      estimated_shipping_minor: 900,
+      quoted_shipping_minor: 1550,
     },
+  },
+  {
+    event_id: "demo_004",
+    source: "fixture.gmail",
+    type: "creative.mix.lead",
+    mode: "DEMO",
+    occurred_at: "2026-09-28T00:02:00+09:00",
+    received_at: "2026-09-28T00:02:02+09:00",
+    source_freshness: "DEMO",
+    correlation_id: "demo-mix-002",
+    data: { request_id: "demo-mix-002", attachments_complete: false },
+  },
+  {
+    event_id: "demo_005",
+    source: "fixture.calendar",
+    type: "calendar.event.upcoming",
+    mode: "DEMO",
+    occurred_at: "2026-09-28T00:03:00+09:00",
+    received_at: "2026-09-28T00:03:02+09:00",
+    source_freshness: "DEMO",
+    correlation_id: "demo-calendar-1",
+    data: { starts_at: "2026-09-29T14:00:00+09:00", summary: "ダミーの作業予定" },
   },
   {
     event_id: "demo_002",
     source: "fixture.gmail",
     type: "creative.mix.lead",
     mode: "DEMO",
-    occurred_at: "2026-09-28T09:01:00+09:00",
-    received_at: "2026-09-28T09:01:02+09:00",
+    occurred_at: "2026-09-28T00:01:00+09:00",
+    received_at: "2026-09-28T00:01:02+09:00",
     source_freshness: "DEMO",
     correlation_id: "demo-mix-001",
     data: {
@@ -103,8 +127,8 @@ export const initialEvents: SourceEventEnvelope[] = [
     source: "fixture.system",
     type: "system.simulation.ready",
     mode: "DEMO",
-    occurred_at: "2026-09-28T09:05:00+09:00",
-    received_at: "2026-09-28T09:05:01+09:00",
+    occurred_at: "2026-09-28T00:05:00+09:00",
+    received_at: "2026-09-28T00:05:01+09:00",
     source_freshness: "DEMO",
     correlation_id: "demo-sys-001",
     data: {
@@ -118,15 +142,15 @@ export const initialApprovals: ApprovalItem[] = [
     intent_id: "demo-intent-001",
     action_type: "demo.review_shipping",
     account: "Shopify US Pet Store",
-    target_id: "SAMPLE-ORDER-0001",
+    target_id: "demo-order-001",
     title: "REVIEW EXPECTED SHIPPING COST",
     description:
       "Target: 1 sample order / Order amount: ¥4,900. Verification of shipping cost discrepancy before order placement. Approving this does NOT trigger real payment or procurement.",
     amount_cap_minor: 4900,
     currency: "JPY",
-    expires_at: "2026-09-28T23:59:59+09:00",
+    expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     status: "pending",
-    reason: "Estimated fulfillment fee exceeds default margin threshold by 14%",
+    reason: "Demo fixture demo_001: quoted shipping ¥1,550 exceeds estimate ¥900 by ¥650",
     risk: "low",
   },
 ];

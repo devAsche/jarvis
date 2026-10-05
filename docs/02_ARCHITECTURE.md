@@ -25,13 +25,13 @@ flowchart TD
 
 ## 候補スタック（確定済み契約や導入完了を意味しない）
 
-- Frontend: Next.js + React + TypeScript; デザイン Tailwind + design tokens; 3D React Three Fiber/Three.js（品質・GPU負荷を比較して遅延ロード）。フォーム/チャートは可読性優先。
+- Frontend: Next.js + React + TypeScript; デザイン Vanilla CSS / CSS modules + design tokens; 3D React Three Fiber / Three.js (Presenceの中央コア専用領域のみ初期導入、遅延ロード、WebGL非対応/低モーション/省電力時はCSS 2D fallback)。周囲のUI（ダッシュボード、承認、ブリーフ、字幕、コントロール）は純粋なReact + DOM/CSS。
 - Backend: Node.js + TypeScript。初期M1ではNext.jsのAPI routesでもよい。Webhook処理、長時間タスク、外部呼出しは将来独立workerへ切り出す。
 - DB: PostgreSQL（M1モックはローカルfixture。M2の接続段階で移行）。Migrationとバックアップ検証はM2以前に設計。
 - Queue: データ損失しない永続キューをM2で選定（例: PostgreSQL系queue / Redis系、無料枠/運用負荷を比較）。M1で特定製品を強制導入しない。
 - Event delivery: Webhook HMAC検証→イベントID重複判定→ジョブ化→処理記録。日次のリコンシリエーションで欠落を検知。
 - AI adapter: モデル非依存の構造化入出力。v0はルールベースと固定fixture。API利用は予算とプライバシーの承認後にオン。
-- Voice: フェーズ1は任意Web Speech API試用/ブラウザーTTS、必ずテキスト代替。フェーズ3でRealtime/通話サービスを比較。
+- Voice: 抽象化レイヤー `VoiceSessionController` と差し替え可能な `VoiceProvider` インターフェースをM0/M1で先行導入。ゼロ課金・E2E検証可能な `MockVoiceAdapter` を接続。将来の評価候補として OpenAI GPT-Live (`gpt-live-1`: 全二重会話/client delegation評価), Google Gemini 3.8 Flash TTS (`gemini-3.8-flash-tts`: ブリーフ・通知の台本読み上げ評価), Google Gemini 3.8 Live (`gemini-3.8-live`: 会話比較候補) を設計に包含（実API接続はユーザー予算承認後）。音声のみによる高リスク承認は禁止。
 
 ## 機能モジュール
 

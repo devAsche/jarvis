@@ -13,7 +13,7 @@
 
 ## M1: 見た目と縦切りの完成
 
-- [ ] PRESENCE / BRIEFING / DASHBOARD / APPROVAL / SYSTEMを画面として実装。暗い青のオリジナルUIと中央コア（CSS/SVGで開始、必要なら3D）。
+- [ ] PRESENCE / BRIEFING / DASHBOARD / APPROVAL / SYSTEMを画面として実装。暗い青のオリジナルUIと中央コアは初期からReact Three Fiber (R3F) 先行（CSS/SVGは2D fallbackとして保持）。VoiceSessionController + MockVoiceAdapterによるゼロ課金音声状態連携基盤を早期導入。
 - [ ] モック `shopify order` と `MIX lead` を挿入 → 左フィードと右ステータス → 朝ブリーフ → 承認カードが更新される。
 - [ ] approvalを承認/差し戻ししても「外部実行なし」を保証し監査ログへ記録。
 - [ ] 1440×900と390×844（可能なら1920×1080）の実ブラウザスクショ、低モーション、キーボード操作。

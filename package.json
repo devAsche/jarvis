@@ -9,19 +9,22 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types tests/contracts.test.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "qa:screenshots": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/capture-screenshots.ps1"
   },
   "dependencies": {
+    "@react-three/fiber": "^9.8.1",
     "next": "^15.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "three": "^0.186.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^22.13.9",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@types/three": "^0.186.0",
     "eslint": "^9.21.0",
     "eslint-config-next": "^15.2.1",
     "typescript": "^5.8.2"

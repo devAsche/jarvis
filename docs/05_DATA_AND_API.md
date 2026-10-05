@@ -36,6 +36,8 @@
 
 ## API案
 
+M0実装済み: `GET /api/demo/state` はfixtureとプロセス内デモ状態を返す。`POST /api/demo/events` と `POST /api/demo/approvals/:id/decision` は開発/テスト時の同一Origin・JSON限定で、外部作用はない。本番ビルドでは書き込みを403で拒否する。保存はプロセス内だけで再起動時に消える。下表の個別業務APIと認証付き承認は今後の設計案であり、実装済みではない。
+
 | METHOD | PATH | 内容 | M1 |
 | --- | --- | --- | --- |
 | GET | `/api/system/status` | mode, source-health, last sync | mock |

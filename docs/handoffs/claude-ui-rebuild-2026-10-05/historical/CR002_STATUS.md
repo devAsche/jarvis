@@ -1,0 +1,12 @@
+# CR002 実装状況（Codexが追記）
+- 最終更新: 2026-09-28 / P1+Slice 1ローカルdemo実装・検証済み
+- 開発実体の絶対パス: `C:\AI\jarvis\JARVIS_C_AI_Starter\jarvis`
+- Git branch / commit: `feature/cr001-r3f-voice-foundations` / 既存CR001未コミット差分を保全し、今回も未コミット
+- 現行テスト結果: typecheck/lint/build合格、`npm test` 22/22。CodexブラウザーでText/Voice Mock→根拠付きbrief→承認→監査、GPU失敗fallback、390px横はみ出し0を確認
+- CR001適用状況: 中央R3F、MockVoiceAdapter、APIと文書は存在。CR001の実GPU負荷/実機WebGL無効化/OS reduced-motionは残件
+- 現在の画面・中央コア技術: 既存3カラムDOM + 中央1 Canvas。calm/network/surge、auto/balanced/low/off、CSS 2D fallback
+- 変更対象: `src/app/page.tsx`, `src/components/presence/*`, demo store/API, fixtures/contracts, Briefing/Approval/LeftSidebar, CSS, test, docs。詳細は `docs/WORK_LOG.md`
+- 着手順と理由: CR001実装確認→API状態共有の不具合修正→型付き描画モード→source-backed demo task/承認→ブラウザーQA→文書更新
+- 完了タスク: P1+Slice 1。3系統並列fixture READ完了後だけbrief確定、固定時間の偽処理状態なし。スクショ `jarvis/screenshots/cr002/`。未完了: 30分耐久/FPS・GPU実測、本番永続化/認証、実サービス。危険操作: 課金API/実注文/メール/広告/OS広域操作なし
+- 次の1件: 別CodexセッションでCR002独立レビュー。P3以降・Cloud/有料音声/Shopify実接続へ進まない
+- 次セッションの最小読込: `AGENTS.md`, `docs/HANDOFF.md`, 本ファイル, 対象仕様のみ

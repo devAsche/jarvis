@@ -15,6 +15,7 @@ export type DataProvenance = z.infer<typeof DataProvenanceSchema>;
 export const CoreStateSchema = z.enum([
   "IDLE",
   "LISTENING",
+  "DELEGATING",
   "THINKING",
   "SPEAKING",
   "EXECUTING",
@@ -24,17 +25,72 @@ export const CoreStateSchema = z.enum([
 ]);
 export type CoreState = z.infer<typeof CoreStateSchema>;
 
+export const CoreVisualStateSchema = z.enum([
+  "idle",
+  "listening",
+  "delegating",
+  "thinking",
+  "speaking",
+  "executing",
+  "awaiting_approval",
+  "error",
+  "offline",
+]);
+export type CoreVisualState = z.infer<typeof CoreVisualStateSchema>;
+export type CoreEffectMode = "calm" | "network" | "surge";
+export type GraphicsQuality = "auto" | "balanced" | "low" | "off";
+export type TaskRun = {
+  taskRunId: string;
+  status: "running" | "waiting_approval" | "succeeded" | "failed";
+  operationalState: CoreVisualState;
+  mode: "DEMO";
+  sourceRefs: string[];
+  reason: string;
+  startedAt: string;
+  approvalId: string;
+  jobs: Array<{ sourceId: string; reason: string; status: "succeeded" | "failed" }>;
+};
+
+export function toCoreVisualState(state: CoreState): CoreVisualState {
+  return state.toLowerCase() as CoreVisualState;
+}
+
+export function toCoreState(state: CoreVisualState): CoreState {
+  return state.toUpperCase() as CoreState;
+}
+
+// CR-001 UIEvent schema
+export const UIEventSchema = z.object({
+  eventId: z.string().min(1),
+  occurredAt: z.string().datetime({ offset: true }),
+  source: z.enum(["mock", "audio", "backend", "policy"]),
+  sessionId: z.string().min(1).optional(),
+  taskId: z.string().min(1).optional(),
+  state: CoreVisualStateSchema,
+  demo: z.boolean(),
+  audioLevel: z.number().min(0).max(1).optional(),
+  message: z.string().optional(),
+}).superRefine((event, ctx) => {
+  if (event.source === "mock" && !event.demo) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Mock events must be DEMO" });
+  }
+  if (["delegating", "thinking", "executing"].includes(event.state) && (!event.sessionId || !event.taskId)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Active task states require sessionId and taskId" });
+  }
+});
+export type UIEvent = z.infer<typeof UIEventSchema>;
+
 export const UIModeSchema = z.enum(["PRESENCE", "BRIEFING", "DASHBOARD", "APPROVAL_CENTER"]);
 export type UIMode = z.infer<typeof UIModeSchema>;
 
 // Source Event Envelope
 export const SourceEventEnvelopeSchema = z.object({
-  event_id: z.string(),
-  source: z.string(),
-  type: z.string(),
+  event_id: z.string().min(1),
+  source: z.string().min(1),
+  type: z.string().min(1),
   mode: DataModeSchema.default("DEMO"),
-  occurred_at: z.string(),
-  received_at: z.string(),
+  occurred_at: z.string().datetime({ offset: true }),
+  received_at: z.string().datetime({ offset: true }),
   source_freshness: DataProvenanceSchema.default("DEMO"),
   correlation_id: z.string(),
   data: z.record(z.unknown()),
@@ -85,9 +141,9 @@ export const ApprovalItemSchema = z.object({
   target_id: z.string(),
   title: z.string(),
   description: z.string(),
-  amount_cap_minor: z.number(),
-  currency: z.string(),
-  expires_at: z.string(),
+  amount_cap_minor: z.number().int().nonnegative(),
+  currency: z.string().regex(/^[A-Z]{3}$/),
+  expires_at: z.string().datetime({ offset: true }),
   status: ApprovalStatusSchema,
   reason: z.string(),
   risk: z.enum(["low", "medium", "high"]),
