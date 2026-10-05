@@ -115,6 +115,16 @@ button, input { font: inherit; color: inherit; }
 .stage { display: grid; justify-items: center; align-content: start; gap: 6px; }
 .core-wrap { position: relative; width: min(78%, 560px); aspect-ratio: 1; max-width: 100%; }
 .core-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.core-wrap::before { content: ""; position: absolute; inset: 14%; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--st) 34%, transparent), transparent 68%); filter: blur(18px); transition: background .6s; }
+.st-idle { --st: #56c8ff; --st2: #b8ecff; }
+.st-running { --st: #a07bff; --st2: #5fe3ff; }
+.st-waiting { --st: #ffb347; --st2: #ffe1a8; }
+.st-approved { --st: #3cf0a4; --st2: #c4ffe6; }
+.st-error { --st: #ff4d63; --st2: #ffb0ba; }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; font-size: 13px; color: var(--sub); margin-top: 2px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; }
+.legend i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+.legend .on { color: var(--ink); background: color-mix(in srgb, var(--c) 18%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 60%, transparent); }
 .core-2d { position: absolute; inset: 0; display: none; place-items: center; }
 .render-off .core-wrap canvas { display: none; }
 .render-off .core-2d { display: grid; }
@@ -129,7 +139,7 @@ button, input { font: inherit; color: inherit; }
 .co .k { font-family: var(--font-mono); font-size: 12px; color: var(--glow); display: flex; justify-content: space-between; gap: 6px; }
 .co .v { font-size: 15px; font-weight: 500; line-height: 1.45; margin-top: 2px; }
 .co .bar { height: 3px; background: var(--line-soft); margin-top: 8px; position: relative; overflow: hidden; }
-.co .bar i { position: absolute; inset: 0 auto 0 0; background: var(--glow); box-shadow: 0 0 10px var(--glow); width: 0; transition: width .6s ease; }
+.co .bar i { position: absolute; inset: 0 auto 0 0; background: var(--st); box-shadow: 0 0 10px var(--st); width: 0; transition: width .6s ease; }
 .co.done .bar i { width: 100%; }
 .co.run .bar i { width: 55%; }
 .co.fail .bar i { width: 100%; background: var(--alert); box-shadow: 0 0 10px var(--alert); }
@@ -138,8 +148,10 @@ button, input { font: inherit; color: inherit; }
 .status { text-align: center; display: grid; gap: 4px; margin-top: -8px; }
 .status .s-tag { font-family: var(--font-mono); font-size: 13px; color: var(--glow); }
 .status strong { font-size: 30px; font-weight: 700; line-height: 1.3; text-shadow: 0 0 22px color-mix(in srgb, var(--glow) 55%, transparent); text-wrap: balance; }
-.status.waiting strong { color: var(--gold); text-shadow: 0 0 22px color-mix(in srgb, var(--gold) 45%, transparent); }
-.status.error strong { color: var(--alert); }
+.status strong { color: color-mix(in srgb, var(--st) 55%, var(--ink)); text-shadow: 0 0 22px color-mix(in srgb, var(--st) 55%, transparent); }
+.status .s-tag { color: var(--st); }
+.core-center .cc b { color: var(--st2) !important; text-shadow: 0 0 10px var(--st); }
+
 .status p { margin: 0 auto; max-width: 34em; color: var(--sub); font-size: 16px; }
 .cmd { display: flex; gap: 10px; width: min(100%, 620px); margin-top: 14px; --c: 12px; padding: 8px 8px 8px 18px; align-items: center; }
 .cmd .p { font-family: var(--font-num); color: var(--glow); font-size: 20px; font-weight: 700; }
@@ -349,6 +361,7 @@ function view() {
       </div>
     </div>
     <div class="status ${st}" aria-live="polite"><span class="s-tag">${st === "idle" ? "稼働中タスクなし" : "デモタスク " + D.run + " · " + ({ running: "照合中", waiting: "承認待ち", approved: "完了", error: "失敗" })[st]}</span><strong>${S.t}</strong><p>${S.p}</p></div>
+    <div class="legend" aria-label="コアの色と状態">${[["idle","待機","#56c8ff"],["running","照合中","#a07bff"],["waiting","承認待ち","#ffb347"],["approved","記録済み","#3cf0a4"],["error","エラー","#ff4d63"]].map(([k,l,c]) => `<span class="${k === st ? "on" : ""}" style="--c:${c}"><i></i>${l}</span>`).join("")}</div>
     <div class="mobile-sources">${SOURCES.map((s, i) => co(s, i, "")).join("")}</div>
     <form class="hp cmd" onsubmit="return false"><span class="p">›</span><label class="sr" for="cmd">指示</label><input id="cmd" placeholder="指示を入力 — 朝の報告 / 承認 / 数字"><button class="btn" type="button" data-act="run">朝の報告</button></form>
   </section>
@@ -393,7 +406,7 @@ function drawCore(t) {
   const glow = css("--glow"), hi = css("--glow-hi"), gold = css("--gold"), alert = css("--alert");
   const speed = { idle: .35, running: 1.6, waiting: .7, approved: .3, error: .2 }[st];
   const T = t * 0.001 * speed;
-  const accent = st === "waiting" ? gold : st === "error" ? alert : glow;
+  const accent = css("--st"), accent2 = css("--st2");
   g.lineCap = "butt";
   g.globalCompositeOperation = "lighter";
   const arc = (rad, a0, a1, w, col, alpha = 1, blur = 0) => { g.beginPath(); g.arc(cx, cy, rad, a0, a1); g.lineWidth = w; g.strokeStyle = col; g.globalAlpha = alpha; g.shadowBlur = blur; g.shadowColor = col; g.stroke(); };
@@ -412,30 +425,30 @@ function drawCore(t) {
   // segmented ring (clockwise)
   const segs = [0.18, 0.05, 0.3, 0.04, 0.12, 0.08, 0.22, 0.06, 0.15, 0.1];
   let a = T * 0.3;
-  segs.forEach((s, i) => { const len = s * Math.PI * 2 * 0.62; if (i % 2 === 0) arc(R * 0.86, a, a + len, 6, glow, .75, 10); a += len + 0.05; });
+  segs.forEach((s, i) => { const len = s * Math.PI * 2 * 0.62; if (i % 2 === 0) arc(R * 0.86, a, a + len, 6, i % 4 === 0 ? accent : glow, .8, 12); a += len + 0.05; });
   // thin counter ring with dashes
-  g.setLineDash([2, 6]); arc(R * 0.8, -T * 0.5, -T * 0.5 + Math.PI * 2, 2, hi, .5); g.setLineDash([]);
+  g.setLineDash([2, 6]); arc(R * 0.8, -T * 0.5, -T * 0.5 + Math.PI * 2, 2, accent2, .55); g.setLineDash([]);
 
   // three source arcs = three fixture lanes
   for (let i = 0; i < 3; i++) {
     const base = -Math.PI / 2 + i * Math.PI * 2 / 3 + 0.08, span = Math.PI * 2 / 3 - 0.16;
     arc(R * 0.7, base, base + span, 12, glow, .14);
-    let fill = 0, col = glow;
+    let fill = 0, col = st === "running" ? (i % 2 ? accent2 : accent) : accent;
     if (st === "running") fill = i === 0 ? 1 : (0.35 + 0.3 * Math.sin(t * 0.004 + i)) ;
     else if (st === "error") { fill = 1; col = i === 1 ? alert : glow; }
     else if (st !== "idle") fill = 1;
-    if (st === "error" && i !== 1) { arc(R * 0.7, base, base + span, 12, glow, .25); continue; }
+    if (st === "error" && i !== 1) { arc(R * 0.7, base, base + span, 12, glow, .22); continue; }
     if (fill) arc(R * 0.7, base, base + span * fill, 12, col, .85, 16);
   }
   // inner instrument ring with notches
   arc(R * 0.56, 0, Math.PI * 2, 1.2, glow, .55);
   g.save(); g.translate(cx, cy); g.rotate(T * 0.6);
-  for (let i = 0; i < 4; i++) { g.rotate(Math.PI / 2); g.beginPath(); g.moveTo(R * 0.56, 0); g.lineTo(R * 0.6, -5); g.lineTo(R * 0.6, 5); g.closePath(); g.fillStyle = hi; g.globalAlpha = .8; g.fill(); }
+  for (let i = 0; i < 4; i++) { g.rotate(Math.PI / 2); g.beginPath(); g.moveTo(R * 0.56, 0); g.lineTo(R * 0.6, -5); g.lineTo(R * 0.6, 5); g.closePath(); g.fillStyle = accent2; g.globalAlpha = .9; g.fill(); }
   g.restore();
   // radar sweep
-  if (st === "running" || st === "idle") {
+  if (st === "running" || st === "idle" || st === "waiting") {
     const sw = T * 1.2, grd = g.createConicGradient ? g.createConicGradient(sw, cx, cy) : null;
-    if (grd) { grd.addColorStop(0, "rgba(255,255,255,0)"); grd.addColorStop(.92, "rgba(255,255,255,0)"); grd.addColorStop(1, glow); g.globalAlpha = .25; g.fillStyle = grd; g.beginPath(); g.arc(cx, cy, R * 0.55, 0, Math.PI * 2); g.fill(); }
+    if (grd) { grd.addColorStop(0, "rgba(255,255,255,0)"); grd.addColorStop(.92, "rgba(255,255,255,0)"); grd.addColorStop(1, accent); g.globalAlpha = .3; g.fillStyle = grd; g.beginPath(); g.arc(cx, cy, R * 0.55, 0, Math.PI * 2); g.fill(); }
   }
   // iris: 12 blades
   g.save(); g.translate(cx, cy); g.rotate(-T * 0.9);
@@ -448,9 +461,11 @@ function drawCore(t) {
   // core light
   const pulse = 1 + 0.06 * Math.sin(t * 0.003 * (speed + .3));
   const rg = g.createRadialGradient(cx, cy, 0, cx, cy, R * 0.22 * pulse);
-  rg.addColorStop(0, "#ffffff"); rg.addColorStop(.25, hi); rg.addColorStop(.6, accent); rg.addColorStop(1, "rgba(0,0,0,0)");
+  rg.addColorStop(0, "#ffffff"); rg.addColorStop(.25, accent2); rg.addColorStop(.6, accent); rg.addColorStop(1, "rgba(0,0,0,0)");
   g.globalAlpha = .95; g.shadowBlur = 0; g.fillStyle = rg; g.beginPath(); g.arc(cx, cy, R * 0.22 * pulse, 0, Math.PI * 2); g.fill();
-  arc(R * 0.18, 0, Math.PI * 2, 1.5, hi, .9, 8);
+  arc(R * 0.18, 0, Math.PI * 2, 1.5, accent2, .9, 10);
+  if (st === "error") { const bl = .5 + .5 * Math.sin(t * 0.008); arc(R * 0.95, 0, Math.PI * 2, 2, accent, .25 + .5 * bl, 14); }
+  if (st === "approved") { arc(R * 0.62, -Math.PI / 2, Math.PI * 1.5, 3, accent, .7, 14); }
   g.globalCompositeOperation = "source-over"; g.globalAlpha = 1; g.shadowBlur = 0;
 }
 function loop(t) { drawCore(reduce ? 0 : t); if (!reduce && !document.hidden && render === "on") raf = requestAnimationFrame(loop); }
@@ -460,7 +475,7 @@ setInterval(() => { const c = document.getElementById("clock"); if (c) { const n
 
 const deck = document.getElementById("deck");
 function paint() {
-  deck.className = `deck ${reduce ? "" : "motion"} ${render === "off" ? "render-off" : ""} ${pal === "gold" ? "pal-gold" : ""}`;
+  deck.className = `deck st-${st} ${reduce ? "" : "motion"} ${render === "off" ? "render-off" : ""} ${pal === "gold" ? "pal-gold" : ""}`;
   deck.innerHTML = view();
   document.querySelectorAll("[data-s]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === st)));
   document.querySelectorAll("[data-r]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.r === render)));
