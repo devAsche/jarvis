@@ -5,7 +5,7 @@
 
 ## クラウドのClaude Codeを使う場合
 
-**ブラウザーのクラウドセッションは、このWindows PCの`C:\AI\...`を直接読めない。** 2026-10-05の引継ぎ作成時点、このGitにはremote設定がなく、CR001〜CR003の実装と本資料の多くが未コミット・未追跡だった。ブラウザーでセッションを開いてパスを貼るだけでは現行アプリを渡せない。最初に[CLOUD_BROWSER_START.md](CLOUD_BROWSER_START.md)を読み、共有するコードの内容と送付先を確認する。送付先はユーザー指定の`https://github.com/devAsche/jarvis`。ユーザーが公開リポジトリに変更したことを確認済みで、送付するファイルは公開される。
+**ブラウザーのクラウドセッションは、このWindows PCの`C:\AI\...`を直接読めない。** 現行コードと本資料はユーザー指定の公開リポジトリ`https://github.com/devAsche/jarvis`の`handoff/claude-ui-rebuild-2026-10-05`ブランチへ送付済み。2026-10-05にGitHub上でブランチと本ファイルを読み取り確認した。最初に[CLOUD_BROWSER_START.md](CLOUD_BROWSER_START.md)を読み、このブランチをClaude Codeのブラウザーセッションで選ぶ。送付済みのファイルは公開される。
 
 ## コードがClaude Codeから読める状態になったら
 
@@ -23,8 +23,8 @@
 
 ## 重要な現状
 
-- `git rev-parse --show-toplevel`の確認結果は上記`jarvis`。2026-10-05時点のbranchは`feature/cr001-r3f-voice-foundations`、HEADは`fe3ab07`。
-- CR001〜CR003の動作するコードは**大量の未コミット変更と未追跡ファイル**に含まれる。HEADだけのworktreeは現状を再現しない。Claude Codeは開始時に`git status`と未追跡ファイルを確認し、`reset/clean/stash`で消さないこと。
+- `git rev-parse --show-toplevel`の確認結果は上記`jarvis`。元のbranchは`feature/cr001-r3f-voice-foundations`、HEADは`fe3ab07`。クラウドへは別の`handoff/claude-ui-rebuild-2026-10-05`ブランチを送付した。
+- CR001〜CR003の動作するコードは元の作業ツリーでは**大量の未コミット変更と未追跡ファイル**に含まれていた。これらを送付用ブランチのスナップショットに記録した。Claude Codeは開始時に実ファイルと`git status`を確認し、欠けていれば作業を止めること。
 - このパッケージ作成ではアプリの`src/`、API、fixture、依存パッケージを編集していない。現在の画面が気に入らないというユーザーの判断が新しい基準。旧CR003のA/Bや青いコアは採用義務なし。
 - 既存3カラムは再設計してよい。業務操作、状態の真実性、承認の安全境界、スマホ可読性は残す。
 

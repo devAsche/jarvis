@@ -117,3 +117,9 @@ Git root/branch/HEADと未コミット・未追跡のCR001〜CR003差分、`AGEN
 
 ユーザーがブラウザーのClaude Codeクラウドを想定していると判明。`git remote -v`は空欄。現行コードと引継ぎ文書は未コミット・未追跡にあるため、ブラウザーからローカルパスを直接読むことはできない。Anthropicのクラウドセッション公式説明を確認し、`CLOUD_BROWSER_START.md`とREADME、設計・実装プロンプトへ受信確認を追加。コード送付先・内容の確認、非公開GitHubへのスナップショット登録は未実施。アプリコードは変更していない。
 
+## 2026-10-05 / Codex / 公開GitHubへの送付
+
+ユーザー指定`devAsche/jarvis`が公開状態で空であることをGitHub APIで確認。送付用`handoff/claude-ui-rebuild-2026-10-05`ブランチを作成し、現行デモコード、テスト、文書、過去の画面証跡とクラウド用引継ぎ資料を`ef166a0`に記録してpush。GitHub APIでブランチと引継ぎREADMEが読めることを確認。`tsconfig.tsbuildinfo`のローカル変更は生成キャッシュとして送付から外し、そのまま保持。
+
+`npm run typecheck`合格、`npm run lint`警告0、`npm test`22/22合格。buildは起動中devと`.next`が衝突するため今回未実施。次の一件: ユーザーがClaude Codeブラウザーで上記ブランチを選び、`CLOUD_BROWSER_START.md`の開始文を貼る。
+

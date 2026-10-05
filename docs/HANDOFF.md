@@ -68,6 +68,12 @@
 
 ブラウザーのClaude Codeはローカル`C:\AI`を直接読めない。`git remote -v`は空欄で、現行UIと新資料は未コミット・未追跡を含む。従来の「GitルートでClaude Codeを開く」という案内はローカル実行前提だったため、`docs/handoffs/claude-ui-rebuild-2026-10-05/CLOUD_BROWSER_START.md`を追加。非公開GitHubへ共有内容を点検したスナップショットを送ってからブラウザーで始める手順と受信確認文を記録した。Gitコミット・remote設定・push・認証は実行していない。
 
+## 2026-10-05 / Codex / GitHub送付用ブランチ
+
+ユーザー指定の`https://github.com/devAsche/jarvis`はGitHub APIで公開状態`private=false`を確認。元の`feature/cr001-r3f-voice-foundations`は保持し、`handoff/claude-ui-rebuild-2026-10-05`を作成。秘密値の典型パターンと追加対象を点検し、`.env`等と権利未確認の外部参考画像は含めない。CR002/CR003の履歴文書と現行画面2枚を引継ぎフォルダーに複写した。`npm run typecheck`合格、`npm run lint`警告0、`npm test`22/22合格。devとの`.next`競合を避けてbuildは今回未実施。
+
+送付用スナップショット`ef166a0`を公開GitHubの上記ブランチへpushし、GitHub APIでブランチと`README_FIRST.md`の存在を確認。生成キャッシュ`tsconfig.tsbuildinfo`だけはローカルの未コミット変更として保持し、送付対象から除外。次の一件はブラウザーのClaude Codeで`devAsche/jarvis`の上記ブランチを選び、`CLOUD_BROWSER_START.md`の開始文を貼ること。
+
 ## 作業引継ぎチェック
 
 - [x] git status確認
