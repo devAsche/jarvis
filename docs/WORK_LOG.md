@@ -123,3 +123,9 @@ Git root/branch/HEADと未コミット・未追跡のCR001〜CR003差分、`AGEN
 
 `npm run typecheck`合格、`npm run lint`警告0、`npm test`22/22合格。buildは起動中devと`.next`が衝突するため今回未実施。次の一件: ユーザーがClaude Codeブラウザーで上記ブランチを選び、`CLOUD_BROWSER_START.md`の開始文を貼る。
 
+
+## 2026-10-05 / Claude Code（クラウド）/ UI再制作の監査と3案
+
+クラウドの`claude/lucid-ramanujan-j3sem3`（HEAD `4b28993`）で現行UI・デモAPI・テスト・引継ぎ資料の存在を確認。`npm ci`、`npm test` 22/22合格、`npm run typecheck`合格、devで`/api/demo/state`の応答を確認。lint/buildは未実行。現行UIを1440×900と390×844で撮影（Canvas 1、横はみ出しなし）。
+
+A 朝の机、B 管制盤、C 対話の3案を単一HTML試作（API非接続）で作り、承認待ち・照合中・描画オフの各状態をデスクトップと390pxで撮影。保存先`docs/design/ui-rebuild-2026-10-05/`。`src/`、API、fixture、依存は未変更。参考サイトの再調査、GPU計測、R3F版コアは未実施。次の1件: ユーザーの案選択。

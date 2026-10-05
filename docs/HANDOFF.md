@@ -74,6 +74,13 @@
 
 送付用スナップショット`ef166a0`を公開GitHubの上記ブランチへpushし、GitHub APIでブランチと`README_FIRST.md`の存在を確認。生成キャッシュ`tsconfig.tsbuildinfo`だけはローカルの未コミット変更として保持し、送付対象から除外。次の一件はブラウザーのClaude Codeで`devAsche/jarvis`の上記ブランチを選び、`CLOUD_BROWSER_START.md`の開始文を貼ること。
 
+## 2026-10-05 / Claude Code（クラウド）/ UI再制作の3案
+
+- branch `claude/lucid-ramanujan-j3sem3`（HEAD `4b28993`から）。現行コード・デモAPI・テストの存在を確認。`npm test` 22/22、`typecheck`合格。lint/buildは未実行。
+- 担当ファイル: `docs/design/ui-rebuild-2026-10-05/`（新規）、`DESIGN_SELECTION.md`の試作欄、本ファイル、`TASK_BOARD.md`、`WORK_LOG.md`。`src/`は変更なし。
+- 3案の試作`prototypes/concepts.html`とキャプチャを保存。比較は同フォルダーの`README.md`。参考サイト調査は未実施。
+- 次の1手: ユーザーが案（または組合せ）を選び、`DESIGN_SELECTION.md`に記録してから`PROMPT_01_IMPLEMENT.md`へ。
+
 ## 作業引継ぎチェック
 
 - [x] git status確認

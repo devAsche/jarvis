@@ -1,0 +1,523 @@
+<title>JARVIS 画面案ギャラリー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=IBM+Plex+Mono:wght@400;500&family=JetBrains+Mono:wght@400;600&family=Shippori+Mincho+B1:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Gallery chrome: thin switcher above three self-contained concept screens.
+   Each concept commits to its own single look, so only the chrome follows the viewer theme. */
+:root {
+  --g-bg: #f3f4f6; --g-fg: #1b1f24; --g-muted: #5b6470; --g-line: #d5d9df; --g-chip: #ffffff; --g-accent: #1f4e79;
+  --font-ui: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --g-bg: #121417; --g-fg: #e8eaed; --g-muted: #9aa3ae; --g-line: #2a2f35; --g-chip: #1b1f24; --g-accent: #8fb8e0; color-scheme: dark } }
+:root[data-theme="dark"] { --g-bg: #121417; --g-fg: #e8eaed; --g-muted: #9aa3ae; --g-line: #2a2f35; --g-chip: #1b1f24; --g-accent: #8fb8e0; color-scheme: dark }
+body { background: var(--g-bg); color: var(--g-fg); font-family: var(--font-ui); margin: 0; }
+* { box-sizing: border-box; }
+button, input, select { font: inherit; }
+:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+
+.gallery-bar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--g-line); }
+.gallery-bar h1 { font-size: 16px; margin: 0; font-weight: 700; }
+.gallery-bar p { margin: 0; color: var(--g-muted); font-size: 13px; flex: 1 1 260px; min-width: 0; }
+.tabs, .states { display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs button, .states button { border: 1px solid var(--g-line); background: var(--g-chip); color: var(--g-fg); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+.tabs button[aria-selected="true"] { background: var(--g-fg); color: var(--g-bg); border-color: var(--g-fg); }
+.states { padding: 10px 16px; border-bottom: 1px solid var(--g-line); align-items: center; font-size: 13px; color: var(--g-muted); }
+.states button { font-size: 13px; padding: 4px 12px; }
+.states button[aria-pressed="true"] { border-color: var(--g-accent); color: var(--g-accent); font-weight: 700; }
+.concept-note { padding: 12px 16px; font-size: 14px; color: var(--g-muted); border-bottom: 1px solid var(--g-line); }
+.concept-note strong { color: var(--g-fg); }
+.screen { min-height: 760px; position: relative; overflow: hidden; }
+
+/* shared helpers inside concepts */
+.mono { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.core-fallback { display: none; }
+.render-off .core-canvas { display: none; }
+.render-off .core-fallback { display: grid; }
+canvas.core-canvas { display: block; width: 100%; height: 100%; }
+
+/* =====================================================================
+   A. 朝の机 (Morning Desk) — light, reading-first, two columns.
+   Brief reads like a morning memo; the decision panel stays pinned right.
+   ===================================================================== */
+.c-a { --a-bg: #e9edf1; --a-paper: #fbfcfd; --a-ink: #16202b; --a-sub: #4d5966; --a-line: #cfd6de; --a-blue: #1f4e79; --a-act: #b4480f; --a-act-bg: #fff3ea; --a-ok: #2f6b4f;
+  background: var(--a-bg); color: var(--a-ink); font-family: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif; font-size: 16px; line-height: 1.7; padding-bottom: 96px; }
+.c-a .a-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 14px 28px; background: var(--a-paper); border-bottom: 1px solid var(--a-line); }
+.c-a .a-brand { font-weight: 700; font-size: 18px; letter-spacing: .02em; }
+.c-a .a-demo { background: repeating-linear-gradient(-45deg, #fde9c8 0 8px, #fbe0b0 8px 16px); color: #6b3a00; font-weight: 700; font-size: 14px; padding: 4px 12px; border-radius: 4px; }
+.c-a .a-top .a-meta { margin-left: auto; color: var(--a-sub); font-size: 14px; display: flex; gap: 16px; flex-wrap: wrap; }
+.c-a .a-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; max-width: 1240px; margin: 0 auto; padding: 28px; }
+.c-a .a-memo { background: var(--a-paper); border: 1px solid var(--a-line); border-radius: 6px; padding: 28px 32px; min-width: 0; }
+.c-a .a-presence { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 20px; align-items: center; padding-bottom: 22px; border-bottom: 1px solid var(--a-line); }
+.c-a .a-core { width: 132px; height: 132px; position: relative; }
+.c-a .a-core .core-fallback { width: 132px; height: 132px; border-radius: 50%; border: 2px solid var(--a-blue); place-items: center; font-size: 13px; color: var(--a-blue); }
+.c-a .a-state { font-size: 14px; color: var(--a-sub); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.c-a .a-state b { color: var(--a-blue); font-weight: 700; }
+.c-a .a-caption { font-family: "Shippori Mincho B1", serif; font-size: 24px; line-height: 1.5; margin: 6px 0 0; text-wrap: balance; }
+.c-a .a-memo h2 { font-size: 15px; color: var(--a-sub); font-weight: 500; margin: 26px 0 8px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.c-a .a-item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 16px; padding: 14px 0; border-top: 1px dashed var(--a-line); }
+.c-a .a-kind { font-size: 14px; font-weight: 700; color: var(--a-blue); }
+.c-a .a-kind.alert { color: var(--a-act); }
+.c-a .a-item p { margin: 0; font-size: 17px; }
+.c-a .a-src { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--a-sub); margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; }
+.c-a .a-src span { border: 1px solid var(--a-line); border-radius: 3px; padding: 0 6px; background: #f2f5f8; }
+.c-a .a-side { display: flex; flex-direction: column; gap: 20px; position: sticky; top: 16px; align-self: start; min-width: 0; }
+.c-a .a-decide { background: var(--a-act-bg); border: 2px solid var(--a-act); border-radius: 6px; padding: 22px; }
+.c-a .a-decide .lbl { font-size: 14px; font-weight: 700; color: var(--a-act); }
+.c-a .a-decide h3 { font-size: 21px; margin: 4px 0 10px; }
+.c-a .a-diff { display: flex; align-items: baseline; gap: 10px; font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
+.c-a .a-diff small { font-size: 15px; font-weight: 500; color: var(--a-act); }
+.c-a dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; font-size: 14px; margin: 14px 0; }
+.c-a dt { color: var(--a-sub); }
+.c-a dd { margin: 0; overflow-wrap: anywhere; }
+.c-a .a-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.c-a .a-btn { border: 1px solid var(--a-ink); background: var(--a-paper); color: var(--a-ink); border-radius: 4px; padding: 10px 18px; font-weight: 700; cursor: pointer; }
+.c-a .a-btn.primary { background: var(--a-ink); color: var(--a-paper); }
+.c-a .a-effect { font-size: 13px; color: var(--a-sub); margin-top: 10px; }
+.c-a .a-done { font-weight: 700; color: var(--a-ok); }
+.c-a .a-card { background: var(--a-paper); border: 1px solid var(--a-line); border-radius: 6px; padding: 18px 20px; }
+.c-a .a-card h3 { font-size: 15px; margin: 0 0 10px; color: var(--a-sub); font-weight: 500; }
+.c-a .a-nums { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.c-a .a-nums b { font-size: 17px; text-align: right; }
+.c-a .a-log { list-style: none; margin: 0; padding: 0; font-size: 14px; display: grid; gap: 6px; }
+.c-a .a-log time { font-family: "IBM Plex Mono", monospace; color: var(--a-sub); margin-right: 8px; font-size: 12.5px; }
+.c-a .a-cmd { position: absolute; left: 0; right: 0; bottom: 0; background: var(--a-paper); border-top: 1px solid var(--a-line); padding: 14px 28px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.c-a .a-cmd input { flex: 1 1 240px; min-width: 0; border: 1px solid var(--a-line); border-radius: 4px; padding: 10px 14px; font-size: 16px; background: #fff; color: var(--a-ink); }
+.c-a .a-cmd .hint { font-size: 13px; color: var(--a-sub); }
+@media (max-width: 860px) {
+  .c-a .a-grid { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 16px; }
+  .c-a .a-side { position: static; order: -1; }
+  .c-a .a-memo { padding: 20px 18px; }
+  .c-a .a-presence { grid-template-columns: 84px minmax(0, 1fr); gap: 14px; }
+  .c-a .a-core, .c-a .a-core .core-fallback { width: 84px; height: 84px; }
+  .c-a .a-caption { font-size: 19px; }
+  .c-a .a-item { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .c-a .a-top { padding: 12px 16px; }
+  .c-a .a-top .a-meta { margin-left: 0; }
+  .c-a .a-cmd { padding: 12px 16px; }
+  .c-a .a-cmd .hint { display: none; }
+}
+
+/* =====================================================================
+   B. 管制盤 (Operations Console) — dark graphite, decision strip on top,
+   point-sphere core beside a live run pipeline bound to taskRunId.
+   ===================================================================== */
+.c-b { --b-bg: #0e1113; --b-panel: #161a1e; --b-line: #2a3036; --b-ink: #e7eaec; --b-sub: #9aa4ad; --b-amber: #f2a541; --b-teal: #4fb3a9; --b-red: #e2675b;
+  background: var(--b-bg); color: var(--b-ink); font-family: "BIZ UDPGothic", "Hiragino Sans", sans-serif; font-size: 16px; line-height: 1.6;
+  display: grid; grid-template-columns: 84px minmax(0, 1fr); min-height: 800px; }
+.c-b .b-rail { border-right: 1px solid var(--b-line); display: flex; flex-direction: column; gap: 4px; padding: 16px 8px; background: #0b0d0f; }
+.c-b .b-rail .logo { font-family: "JetBrains Mono", monospace; font-weight: 600; text-align: center; font-size: 13px; color: var(--b-teal); margin-bottom: 14px; }
+.c-b .b-rail button { background: none; border: 0; color: var(--b-sub); padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; display: grid; gap: 4px; justify-items: center; }
+.c-b .b-rail button[aria-current="page"] { background: var(--b-panel); color: var(--b-ink); }
+.c-b .b-rail svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+.c-b .b-rail .badge { background: var(--b-amber); color: #1a1205; border-radius: 999px; font-size: 11px; padding: 0 6px; font-weight: 700; }
+.c-b .b-main { padding: 18px 24px 110px; display: grid; gap: 18px; align-content: start; min-width: 0; }
+.c-b .b-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.c-b .b-head h1 { font-size: 20px; margin: 0; }
+.c-b .b-mode { font-family: "JetBrains Mono", monospace; font-size: 13px; border: 1px solid var(--b-amber); color: var(--b-amber); padding: 2px 10px; border-radius: 4px; }
+.c-b .b-head .b-time { margin-left: auto; color: var(--b-sub); font-family: "JetBrains Mono", monospace; font-size: 14px; }
+.c-b .b-strip { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px 24px; align-items: center; background: linear-gradient(90deg, rgba(242,165,65,.14), rgba(242,165,65,.04)); border: 1px solid rgba(242,165,65,.55); border-radius: 10px; padding: 16px 20px; }
+.c-b .b-strip.clear { background: var(--b-panel); border-color: var(--b-line); }
+.c-b .b-strip .tag { font-size: 13px; font-weight: 700; color: var(--b-amber); }
+.c-b .b-strip.clear .tag { color: var(--b-teal); }
+.c-b .b-strip h2 { margin: 2px 0 0; font-size: 19px; }
+.c-b .b-strip .facts { color: var(--b-sub); font-size: 14px; display: flex; gap: 6px 18px; flex-wrap: wrap; }
+.c-b .b-strip .facts b { color: var(--b-ink); font-family: "JetBrains Mono", monospace; font-weight: 600; }
+.c-b .b-amt { font-family: "JetBrains Mono", monospace; font-size: 30px; font-weight: 600; white-space: nowrap; }
+.c-b .b-amt small { display: block; font-size: 13px; color: var(--b-amber); font-family: "BIZ UDPGothic", sans-serif; }
+.c-b .b-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.c-b .b-btn { border: 1px solid var(--b-line); background: var(--b-panel); color: var(--b-ink); padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+.c-b .b-btn.go { background: var(--b-amber); color: #1a1205; border-color: var(--b-amber); }
+.c-b .b-mid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; }
+.c-b .b-panel { background: var(--b-panel); border: 1px solid var(--b-line); border-radius: 10px; padding: 18px; min-width: 0; }
+.c-b .b-panel h3 { margin: 0 0 12px; font-size: 15px; color: var(--b-sub); font-weight: 400; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.c-b .b-core { height: 300px; position: relative; }
+.c-b .b-core .core-fallback { height: 300px; place-items: center; border: 1px dashed var(--b-line); border-radius: 50%; width: 260px; margin: 0 auto; color: var(--b-sub); font-size: 14px; }
+.c-b .b-corestate { text-align: center; font-size: 18px; font-weight: 700; margin-top: 6px; }
+.c-b .b-corestate small { display: block; font-weight: 400; font-size: 13px; color: var(--b-sub); font-family: "JetBrains Mono", monospace; }
+.c-b .b-lanes { display: grid; gap: 10px; }
+.c-b .b-lane { display: grid; grid-template-columns: 22px 120px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 8px; background: #1b2025; }
+.c-b .b-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--b-sub); }
+.c-b .b-lane.ok .b-dot { background: var(--b-teal); border-color: var(--b-teal); }
+.c-b .b-lane.run .b-dot { border-color: var(--b-teal); border-top-color: transparent; animation: bspin 1s linear infinite; }
+@keyframes bspin { to { transform: rotate(360deg); } }
+.c-b .b-lane .src { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--b-sub); }
+.c-b .b-lane .st { font-size: 13px; color: var(--b-sub); white-space: nowrap; }
+.c-b .b-run { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--b-sub); margin-top: 12px; }
+.c-b table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.c-b th { text-align: left; font-weight: 400; color: var(--b-sub); font-size: 13px; padding: 6px 8px; border-bottom: 1px solid var(--b-line); }
+.c-b td { padding: 10px 8px; border-bottom: 1px solid var(--b-line); vertical-align: top; }
+.c-b td.src { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--b-sub); white-space: nowrap; }
+.c-b .k { font-size: 12px; padding: 1px 8px; border-radius: 4px; background: #232a30; white-space: nowrap; }
+.c-b .k.alert { background: rgba(242,165,65,.18); color: var(--b-amber); }
+.c-b .b-low { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px; }
+.c-b .b-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.c-b .b-kpi { padding: 10px 0; border-bottom: 1px solid var(--b-line); }
+.c-b .b-kpi span { color: var(--b-sub); font-size: 13px; display: block; }
+.c-b .b-kpi b { font-family: "JetBrains Mono", monospace; font-size: 22px; }
+.c-b .b-kpi .unk { color: var(--b-sub); font-size: 18px; }
+.c-b .b-cmd { position: absolute; left: 84px; right: 0; bottom: 0; border-top: 1px solid var(--b-line); background: #0b0d0f; padding: 12px 24px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.c-b .b-cmd .prompt { font-family: "JetBrains Mono", monospace; color: var(--b-teal); }
+.c-b .b-cmd input { flex: 1 1 220px; min-width: 0; background: var(--b-panel); border: 1px solid var(--b-line); color: var(--b-ink); border-radius: 8px; padding: 10px 12px; font-size: 16px; }
+.c-b .b-cmd .voice { color: var(--b-sub); font-size: 13px; }
+@media (max-width: 860px) {
+  .c-b { grid-template-columns: minmax(0, 1fr); }
+  .c-b .b-rail { position: absolute; left: 0; right: 0; bottom: 0; flex-direction: row; justify-content: space-around; border-right: 0; border-top: 1px solid var(--b-line); padding: 4px; z-index: 2; }
+  .c-b .b-rail .logo { display: none; }
+  .c-b .b-main { padding: 14px 16px 150px; }
+  .c-b .b-strip { grid-template-columns: minmax(0, 1fr); }
+  .c-b .b-mid, .c-b .b-low { grid-template-columns: minmax(0, 1fr); }
+  .c-b .b-core, .c-b .b-core .core-fallback { height: 200px; }
+  .c-b .b-core .core-fallback { width: 200px; }
+  .c-b .b-lane { grid-template-columns: 18px minmax(0, 1fr) auto; }
+  .c-b .b-lane .src { display: none; }
+  .c-b .b-cmd { left: 0; bottom: 64px; padding: 10px 16px; }
+  .c-b .b-cmd .voice { display: none; }
+  .c-b .b-head .b-time { margin-left: 0; }
+  .c-b td.src { white-space: normal; }
+}
+
+/* =====================================================================
+   C. 対話 (Conversation Stage) — voice-first. Presence is a waveform band;
+   the brief arrives as a thread with sources; the approval is a message.
+   ===================================================================== */
+.c-c { --c-bg: #1a1715; --c-panel: #24201d; --c-line: #3a332d; --c-ink: #f3ece4; --c-sub: #b5aa9d; --c-gold: #e3b76b; --c-sage: #93b89d; --c-me: #2f3a33;
+  background: var(--c-bg); color: var(--c-ink); font-family: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif; font-size: 16px; line-height: 1.75; padding-bottom: 130px; }
+.c-c .c-top { display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap; padding: 14px 28px; }
+.c-c .c-name { font-family: "Shippori Mincho B1", serif; font-size: 22px; font-weight: 700; }
+.c-c .c-pill { border: 1px solid var(--c-gold); color: var(--c-gold); border-radius: 999px; padding: 2px 12px; font-size: 13px; font-weight: 700; }
+.c-c .c-top .c-right { margin-left: auto; color: var(--c-sub); font-size: 14px; }
+.c-c .c-band { height: 150px; position: relative; border-top: 1px solid var(--c-line); border-bottom: 1px solid var(--c-line); background: radial-gradient(ellipse 50% 100% at 50% 50%, rgba(227,183,107,.08), transparent 70%); }
+.c-c .c-band .core-fallback { height: 150px; place-items: center; color: var(--c-sub); font-size: 14px; }
+.c-c .c-band-label { position: absolute; left: 28px; bottom: 10px; font-size: 14px; color: var(--c-sub); display: flex; gap: 10px; flex-wrap: wrap; right: 28px; }
+.c-c .c-band-label b { color: var(--c-gold); }
+.c-c .c-wrap { display: grid; grid-template-columns: minmax(0, 720px) 300px; gap: 40px; justify-content: center; padding: 24px 28px; }
+.c-c .c-thread { display: grid; gap: 18px; min-width: 0; }
+.c-c .msg { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 14px; }
+.c-c .who { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--c-panel); border: 1px solid var(--c-line); color: var(--c-gold); }
+.c-c .msg.me { grid-template-columns: minmax(0, 1fr); justify-items: end; }
+.c-c .msg.me .bubble { background: var(--c-me); border-radius: 14px 14px 4px 14px; padding: 8px 16px; max-width: 80%; }
+.c-c .meta { font-size: 13px; color: var(--c-sub); }
+.c-c .say { font-size: 18px; margin: 2px 0 8px; }
+.c-c .facts { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.c-c .facts li { padding: 10px 14px; background: var(--c-panel); border-radius: 10px; border: 1px solid var(--c-line); }
+.c-c .facts .src { font-size: 12.5px; color: var(--c-sub); font-family: "IBM Plex Mono", monospace; }
+.c-c .ask { background: #2b241b; border: 1px solid var(--c-gold); border-radius: 14px; padding: 18px 20px; }
+.c-c .ask .t { font-size: 14px; font-weight: 700; color: var(--c-gold); }
+.c-c .ask h3 { font-family: "Shippori Mincho B1", serif; font-size: 22px; margin: 2px 0 8px; }
+.c-c .ask .row { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; color: var(--c-sub); margin-bottom: 12px; }
+.c-c .ask .row b { color: var(--c-ink); font-variant-numeric: tabular-nums; }
+.c-c .ask .amt { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: 6px; }
+.c-c .c-btn { border-radius: 999px; padding: 9px 20px; border: 1px solid var(--c-line); background: var(--c-panel); color: var(--c-ink); cursor: pointer; font-weight: 700; }
+.c-c .c-btn.go { background: var(--c-gold); color: #241a0b; border-color: var(--c-gold); }
+.c-c .c-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.c-c .note { font-size: 13px; color: var(--c-sub); margin-top: 10px; }
+.c-c .c-aside { display: grid; gap: 22px; align-content: start; min-width: 0; }
+.c-c .c-aside h4 { margin: 0 0 6px; font-size: 14px; color: var(--c-sub); font-weight: 500; }
+.c-c .c-aside .num { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--c-line); font-size: 15px; font-variant-numeric: tabular-nums; gap: 8px; }
+.c-c .c-aside .num b { font-weight: 700; }
+.c-c .conn { display: flex; flex-wrap: wrap; gap: 6px; }
+.c-c .conn span { font-size: 13px; padding: 2px 10px; border-radius: 999px; border: 1px dashed var(--c-line); color: var(--c-sub); }
+.c-c .c-compose { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 28px 16px; background: linear-gradient(transparent, var(--c-bg) 30%); }
+.c-c .c-compose .inner { max-width: 1060px; margin: 0 auto; display: grid; gap: 8px; }
+.c-c .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.c-c .chips button { border: 1px solid var(--c-line); background: var(--c-panel); color: var(--c-ink); border-radius: 999px; padding: 4px 14px; font-size: 14px; cursor: pointer; }
+.c-c .field { display: flex; gap: 8px; background: var(--c-panel); border: 1px solid var(--c-line); border-radius: 999px; padding: 6px 6px 6px 18px; align-items: center; }
+.c-c .field input { flex: 1; min-width: 0; background: none; border: 0; color: var(--c-ink); font-size: 16px; outline: none; }
+.c-c .mic { border-radius: 999px; border: 0; background: var(--c-sage); color: #14201a; padding: 8px 16px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+@media (max-width: 860px) {
+  .c-c .c-wrap { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 24px; }
+  .c-c .c-top { padding: 12px 16px; }
+  .c-c .c-top .c-right { margin-left: 0; }
+  .c-c .c-band, .c-c .c-band .core-fallback { height: 110px; }
+  .c-c .c-band-label { left: 16px; right: 16px; }
+  .c-c .msg { grid-template-columns: minmax(0, 1fr); }
+  .c-c .who { display: none; }
+  .c-c .c-compose { padding: 10px 16px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { .c-b .b-lane.run .b-dot { animation: none; } }
+</style>
+
+<header class="gallery-bar">
+  <h1>JARVIS 画面案ギャラリー（試作・DEMO）</h1>
+  <p>3つの方向性を同じデモデータで比較します。ボタンは試作内だけで状態を切り替え、APIや外部サービスには接続しません。</p>
+  <div class="tabs" role="tablist" aria-label="画面案">
+    <button role="tab" id="tab-a" aria-selected="true" data-c="a">A 朝の机</button>
+    <button role="tab" id="tab-b" aria-selected="false" data-c="b">B 管制盤</button>
+    <button role="tab" id="tab-c" aria-selected="false" data-c="c">C 対話</button>
+  </div>
+</header>
+<div class="states" aria-label="表示する状態">
+  <span>状態:</span>
+  <button data-s="idle" aria-pressed="false">通常</button>
+  <button data-s="running" aria-pressed="false">照合中</button>
+  <button data-s="waiting" aria-pressed="true">承認待ち</button>
+  <button data-s="approved" aria-pressed="false">承認後</button>
+  <button data-s="error" aria-pressed="false">エラー</button>
+  <span>描画:</span>
+  <button data-r="on" aria-pressed="true">3D相当</button>
+  <button data-r="off" aria-pressed="false">オフ / GPU失敗</button>
+</div>
+<p class="concept-note" id="note"></p>
+<main class="screen" id="screen"></main>
+
+<script>
+// Fixture-equivalent demo data (src/fixtures/index.ts). Example values, not sales results.
+const D = {
+  order: "demo-order-001", amount: 4900, est: 900, quoted: 1550, mix: 2,
+  account: "Shopify US Pet Store", intent: "demo-intent-001",
+  expires: "10/06 09:30", generated: "2026-10-05 08:12", run: "7c1e09a2",
+};
+const yen = n => "¥" + n.toLocaleString("ja-JP");
+const NOTES = {
+  a: "<strong>A 朝の机</strong>：明るい紙面で朝の報告を読み物として並べ、右に「判断が必要なこと」を固定。Presenceは本文の書き出しに置く小さな同心円。読む量が多い日に強い。",
+  b: "<strong>B 管制盤</strong>：最上段に判断の帯、中央に点の球体と「どの出典を照合中か」のレーン。taskRunIdの進行が目で追える。業務の状態監視に強い。",
+  c: "<strong>C 対話</strong>：Presenceを横長の声の波形にし、報告と承認を会話の流れで届ける。音声中心の体験に強いが、一覧性は下がる。",
+};
+const STATE_TEXT = {
+  idle: { a: "待機中", b: "待機中", c: "待機しています" },
+  running: { a: "サンプルを照合中", b: "照合中", c: "サンプルを照合しています" },
+  waiting: { a: "配送費の確認が必要です", b: "人の確認待ち", c: "ひとつ確認してほしいことがあります" },
+  approved: { a: "模擬判断を記録しました", b: "記録済み", c: "判断を記録しました" },
+  error: { a: "照合できません", b: "照合失敗", c: "サンプルを読み取れませんでした" },
+};
+let concept = "a", st = "waiting", render = "on", dec = "承認";
+
+function lanes() {
+  const srcs = [["fixture.shopify", "注文 demo_001"], ["fixture.gmail", "MIX demo_002 / demo_004"], ["fixture.calendar", "予定 demo_005"]];
+  return srcs.map(([s, l], i) => {
+    let cls = "", t = "未開始";
+    if (st === "running") { cls = i === 0 ? "ok" : "run"; t = i === 0 ? "読取済み" : "読取中"; }
+    else if (st === "error") { cls = ""; t = i === 1 ? "不一致" : "中止"; }
+    else if (st !== "idle") { cls = "ok"; t = "読取済み"; }
+    return `<div class="b-lane ${cls}"><span class="b-dot" aria-hidden="true"></span><span class="src">${s}</span><span>${l}</span><span class="st">${t}</span></div>`;
+  }).join("");
+}
+function decided() { return st === "approved"; }
+function pending() { return st === "waiting" || st === "running" || st === "idle"; }
+
+function viewA() {
+  const showBrief = st !== "idle" && st !== "running";
+  const brief = showBrief && st !== "error";
+  return `<div class="c-a ${render === "off" ? "render-off" : ""}">
+  <div class="a-top"><span class="a-brand">JARVIS</span><span class="a-demo">DEMO · 実サービス未接続</span>
+    <span class="a-meta"><span>10月5日（日）8:14 東京</span><span>接続 0/4</span></span></div>
+  <div class="a-grid">
+    <article class="a-memo">
+      <div class="a-presence">
+        <div class="a-core"><canvas class="core-canvas" data-core="a" aria-hidden="true"></canvas><div class="core-fallback">2D表示</div></div>
+        <div>
+          <div class="a-state" aria-live="polite"><b>${STATE_TEXT[st].a}</b><span>${st === "idle" ? "稼働中タスクなし" : "デモタスク " + D.run}</span></div>
+          <p class="a-caption">${st === "error" ? "サンプルの出典が一致しないため、報告を作れませんでした。" : st === "running" ? "注文・問い合わせ・予定のサンプルを読み取っています。" : st === "idle" ? "おはようございます。朝の報告を作りましょうか。" : "おはようございます。今朝の確認事項は3件、判断が必要なのは1件です。"}</p>
+        </div>
+      </div>
+      <h2><span>朝の報告</span><span class="mono">${brief ? "作成 " + D.generated + " · 出典4件 · DEMO" : "未作成"}</span></h2>
+      ${brief ? `
+      <div class="a-item"><span class="a-kind alert">異常</span><div><p>サンプル注文1件の送料が見積 ${yen(D.est)} → 請求 ${yen(D.quoted)}（差額 ${yen(D.quoted - D.est)}）</p><div class="a-src"><span>demo_001</span><span>fixture.shopify</span></div></div></div>
+      <div class="a-item"><span class="a-kind">保留</span><div><p>サンプルのMIX問い合わせ ${D.mix}件が返信待ち。どちらも添付が未完了です。</p><div class="a-src"><span>demo_002</span><span>demo_004</span><span>fixture.gmail</span></div></div></div>
+      <div class="a-item"><span class="a-kind">今日</span><div><p>デモカレンダーに2時間の集中枠を取れます（明日14:00に作業予定）。</p><div class="a-src"><span>demo_005</span><span>fixture.calendar</span></div></div></div>
+      <div class="a-item"><span class="a-kind">提案</span><div><p>広告の追加実験より先に、商品ページを見直す。</p><div class="a-src"><span>demo-rule</span><span>ルールによる提案</span></div></div></div>`
+      : `<div class="a-item"><span class="a-kind">—</span><div><p>${st === "error" ? "出典の照合に失敗しました。外部操作は行っていません。もう一度作成できます。" : st === "running" ? "照合が終わると、出典ID付きでここに並びます。" : "「朝の報告を作る」を押すと、サンプル出典を照合して報告を作ります。"}</p></div></div>`}
+    </article>
+    <aside class="a-side">
+      <section class="a-decide" aria-label="判断が必要なこと">
+        <div class="lbl">${decided() ? "記録済み" : "判断が必要 · 1件"}</div>
+        <h3>サンプル注文の配送費差額</h3>
+        <div class="a-diff">${yen(D.est)} → ${yen(D.quoted)} <small>+${yen(D.quoted - D.est)}</small></div>
+        <dl><dt>対象</dt><dd>${D.account} / ${D.order}</dd><dt>注文額</dt><dd>${yen(D.amount)}（例示）</dd><dt>期限</dt><dd>${D.expires}</dd><dt>状態</dt><dd>${decided() ? '<span class="a-done">模擬${dec}済み · 8:16</span>' : "確認待ち"}</dd></dl>
+        ${decided() ? "" : `<div class="a-btns"><button class="a-btn primary" data-act="approve">模擬承認する</button><button class="a-btn" data-act="reject">見送る</button></div>`}
+        <div class="a-effect">判断を記録しても、発注・支払い・出荷は行いません。音声の「はい」では確定しません。</div>
+      </section>
+      <section class="a-card"><h3>事業の数字（サンプル）</h3>
+        <div class="a-nums"><span>注文額の例</span><b>${yen(D.amount)}</b><span>MIX問い合わせ</span><b>${D.mix}件</b><span>配送費の確認</span><b>1件</b><span>利益</span><b>不明</b><span>実データの最終同期</span><b>なし</b></div></section>
+      <section class="a-card"><h3>記録</h3><ul class="a-log">
+        ${decided() ? `<li><time>08:16</time>模擬${dec} · 外部効果なし</li>` : ""}
+        ${st !== "idle" ? `<li><time>08:12</time>照合 ${st === "error" ? "失敗" : "完了"} · 出典4件</li><li><time>08:12</time>デモタスク ${D.run} 開始</li>` : `<li><time>—</time>まだ記録はありません</li>`}
+      </ul></section>
+    </aside>
+  </div>
+  <form class="a-cmd" onsubmit="return false"><label class="sr" for="a-in">指示</label><input id="a-in" placeholder="指示を入力（例：朝の報告、承認、数字）"><button class="a-btn primary" data-act="run" type="button">朝の報告を作る</button><button class="a-btn" type="button">音声（モック）</button><span class="hint">/ でフォーカス</span></form>
+</div>`;
+}
+
+function viewB() {
+  const icon = p => `<svg viewBox="0 0 24 24" aria-hidden="true">${p}</svg>`;
+  const showBrief = st === "waiting" || st === "approved";
+  return `<div class="c-b ${render === "off" ? "render-off" : ""}">
+  <nav class="b-rail" aria-label="画面">
+    <div class="logo">JRVS</div>
+    <button aria-current="page">${icon('<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>')}今日</button>
+    <button>${icon('<path d="M6 4h12v16H6z"/><path d="M9 9h6M9 13h6"/>')}報告</button>
+    <button>${icon('<path d="M5 12l4 4 10-10"/>')}承認${decided() ? "" : '<span class="badge">1</span>'}</button>
+    <button>${icon('<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>')}数字</button>
+    <button>${icon('<path d="M4 6h16M4 12h16M4 18h10"/>')}記録</button>
+  </nav>
+  <div class="b-main">
+    <div class="b-head"><h1>今日の業務</h1><span class="b-mode">DEMO · READ ONLY · 外部操作なし</span><span class="b-time">2026-10-05 08:14 JST</span></div>
+    <section class="b-strip ${decided() ? "clear" : ""}" aria-label="判断">
+      <div class="b-amt mono">+${yen(D.quoted - D.est)}<small>配送費の差額</small></div>
+      <div><div class="tag">${decided() ? "記録済み · 模擬${dec} 08:16" : "判断が必要 · 期限 " + D.expires}</div><h2>サンプル注文 ${D.order} の配送費</h2>
+        <div class="facts"><span>見積 <b>${yen(D.est)}</b></span><span>請求 <b>${yen(D.quoted)}</b></span><span>注文額 <b>${yen(D.amount)}</b>（例示）</span><span>${D.account}</span><span>実発注・支払いなし</span></div></div>
+      <div class="b-actions">${decided() ? `<button class="b-btn">記録を見る</button>` : `<button class="b-btn go" data-act="approve">模擬承認</button><button class="b-btn" data-act="reject">見送る</button>`}</div>
+    </section>
+    <div class="b-mid">
+      <section class="b-panel" aria-label="JARVISの状態">
+        <h3><span>Presence</span><span>${render === "off" ? "2D表示" : "R3F想定"}</span></h3>
+        <div class="b-core"><canvas class="core-canvas" data-core="b" aria-hidden="true"></canvas><div class="core-fallback">2D表示 · 状態は下に表示</div></div>
+        <div class="b-corestate" aria-live="polite">${STATE_TEXT[st].b}<small>${st === "idle" ? "task: なし" : "task " + D.run + " · " + (st === "running" ? "fixture READ" : st === "error" ? "failed" : st === "approved" ? "succeeded" : "waiting_approval")}</small></div>
+      </section>
+      <section class="b-panel" aria-label="照合の進行">
+        <h3><span>照合の進行</span><span>出典 4件 / 3系統</span></h3>
+        <div class="b-lanes">${lanes()}</div>
+        <div class="b-run">${st === "idle" ? "実行中のタスクはありません。" : `taskRunId ${D.run}… · 開始 08:12:03 · DEMO`}</div>
+        ${st === "error" ? `<p style="color:var(--b-red);margin:10px 0 0">MIXの出典IDが一致しません。報告は作らず、外部操作もしていません。</p>` : ""}
+      </section>
+    </div>
+    <div class="b-low">
+      <section class="b-panel" aria-label="朝の報告"><h3><span>朝の報告</span><span>${showBrief ? "作成 " + D.generated : "未作成"}</span></h3>
+        ${showBrief ? `<table><thead><tr><th>区分</th><th>内容</th><th>出典</th></tr></thead><tbody>
+        <tr><td><span class="k alert">異常</span></td><td>送料 見積${yen(D.est)} → 請求${yen(D.quoted)}</td><td class="src">demo_001</td></tr>
+        <tr><td><span class="k">保留</span></td><td>MIX問い合わせ ${D.mix}件 返信待ち</td><td class="src">demo_002, 004</td></tr>
+        <tr><td><span class="k">今日</span></td><td>2時間の集中枠を確保できる</td><td class="src">demo_005</td></tr>
+        <tr><td><span class="k">提案</span></td><td>広告より先に商品ページを見直す</td><td class="src">demo-rule</td></tr></tbody></table>`
+        : `<p style="color:var(--b-sub);margin:0">${st === "running" ? "照合が終わると出典付きで表示されます。" : st === "error" ? "照合に失敗したため作成していません。" : "下の入力欄か「朝の報告」から作成します。"}</p>`}
+      </section>
+      <section class="b-panel" aria-label="事業の数字"><h3><span>事業の数字</span><span>サンプル値</span></h3>
+        <div class="b-kpis"><div class="b-kpi"><span>注文額の例</span><b>${yen(D.amount)}</b></div><div class="b-kpi"><span>MIX問い合わせ</span><b>${D.mix}</b></div><div class="b-kpi"><span>利益</span><b class="unk">不明</b></div><div class="b-kpi"><span>実データ同期</span><b class="unk">なし</b></div></div>
+      </section>
+    </div>
+  </div>
+  <form class="b-cmd" onsubmit="return false"><span class="prompt">›</span><label class="sr" for="b-in">指示</label><input id="b-in" placeholder="朝の報告 / 承認 / 数字"><button class="b-btn go" data-act="run" type="button">朝の報告</button><span class="voice">音声: モック · ミュート</span></form>
+</div>`;
+}
+
+function viewC() {
+  const after = st === "waiting" || st === "approved";
+  return `<div class="c-c ${render === "off" ? "render-off" : ""}">
+  <div class="c-top"><span class="c-name">JARVIS</span><span class="c-pill">DEMO · 外部操作なし</span><span class="c-right">10月5日 8:14 · 音声モック</span></div>
+  <div class="c-band"><canvas class="core-canvas" data-core="c" aria-hidden="true"></canvas><div class="core-fallback">2D表示（音声の波形は省略）</div>
+    <div class="c-band-label" aria-live="polite"><b>${STATE_TEXT[st].c}</b><span>${st === "idle" ? "タスクなし" : "デモタスク " + D.run}</span></div></div>
+  <div class="c-wrap">
+    <section class="c-thread" aria-label="会話">
+      <div class="msg"><div class="who">J</div><div><div class="meta">JARVIS · 8:12</div><p class="say">おはようございます。今朝のサンプル業務をまとめます。</p></div></div>
+      ${st === "idle" ? "" : `<div class="msg me"><div class="bubble">朝の報告</div><div class="meta">あなた · 8:12 · テキスト</div></div>`}
+      ${st === "running" ? `<div class="msg"><div class="who">J</div><div><div class="meta">JARVIS · 照合中</div><p class="say">注文・問い合わせ・予定のサンプル出典を読み取っています…</p></div></div>` : ""}
+      ${st === "error" ? `<div class="msg"><div class="who">J</div><div><div class="meta">JARVIS · 8:12</div><p class="say">出典IDが一致しなかったため、報告を作りませんでした。外部の操作はしていません。</p><div class="c-btns"><button class="c-btn" data-act="run">もう一度</button></div></div></div>` : ""}
+      ${after ? `<div class="msg"><div class="who">J</div><div><div class="meta">JARVIS · 8:12 · 出典4件 · DEMO</div><p class="say">確認事項は3件です。</p>
+        <ul class="facts">
+          <li>サンプル注文1件の送料が見積 ${yen(D.est)} から ${yen(D.quoted)} に。<div class="src">demo_001 · fixture.shopify</div></li>
+          <li>MIX問い合わせ ${D.mix}件が返信待ち。<div class="src">demo_002, demo_004 · fixture.gmail</div></li>
+          <li>今日は2時間の集中枠が取れます。<div class="src">demo_005 · fixture.calendar</div></li>
+        </ul></div></div>
+      <div class="msg"><div class="who">J</div><div class="ask" aria-label="判断">
+        <div class="t">${decided() ? "記録済み · 模擬${dec} 8:16" : "あなたの判断が必要です · 期限 " + D.expires}</div>
+        <h3>配送費の差額を確認</h3>
+        <div class="amt">${yen(D.est)} → ${yen(D.quoted)}（+${yen(D.quoted - D.est)}）</div>
+        <div class="row"><span>対象 <b>${D.order}</b></span><span>注文額 <b>${yen(D.amount)}</b>（例示）</span><span>${D.account}</span></div>
+        ${decided() ? "" : `<div class="c-btns"><button class="c-btn go" data-act="approve">模擬承認する</button><button class="c-btn" data-act="reject">見送る</button><button class="c-btn">根拠を見る</button></div>`}
+        <div class="note">画面のボタンでのみ記録されます。声の「はい」では確定しません。発注・支払いは行いません。</div>
+      </div></div>` : ""}
+      ${decided() ? `<div class="msg"><div class="who">J</div><div><div class="meta">JARVIS · 8:16</div><p class="say">記録しました。外部への効果はありません。</p></div></div>` : ""}
+    </section>
+    <aside class="c-aside">
+      <div><h4>事業の数字 · サンプル</h4>
+        <div class="num"><span>注文額の例</span><b>${yen(D.amount)}</b></div><div class="num"><span>MIX問い合わせ</span><b>${D.mix}件</b></div><div class="num"><span>利益</span><b>不明</b></div><div class="num"><span>最終同期</span><b>なし</b></div></div>
+      <div><h4>接続</h4><div class="conn"><span>Shopify 未接続</span><span>Gmail 未接続</span><span>Calendar 未接続</span><span>TickTick 未接続</span></div></div>
+    </aside>
+  </div>
+  <div class="c-compose"><div class="inner">
+    <div class="chips"><button data-act="run">朝の報告</button><button>承認を見る</button><button>数字</button></div>
+    <form class="field" onsubmit="return false"><label class="sr" for="c-in">指示</label><input id="c-in" placeholder="話しかける・入力する（デモ）"><button class="mic" type="button">音声 · モック</button></form>
+  </div></div>
+</div>`;
+}
+
+// ---- Presence cores (2D canvas stand-ins for the R3F centre) ----
+let raf = 0, t0 = performance.now();
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function energy() { return { idle: .25, running: 1, waiting: .55, approved: .2, error: .4 }[st]; }
+function drawA(ctx, w, h, t) {
+  const cx = w / 2, cy = h / 2, R = Math.min(w, h) / 2 - 4, e = energy();
+  const ink = st === "error" ? "#b4480f" : st === "waiting" ? "#b4480f" : "#1f4e79";
+  for (let i = 0; i < 4; i++) {
+    const r = R * (0.38 + i * 0.2) + Math.sin(t * 0.0012 + i) * 2 * e;
+    ctx.strokeStyle = ink; ctx.globalAlpha = 0.25 + i * 0.15; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.globalAlpha = 1; ctx.lineWidth = 4; ctx.lineCap = "round";
+  const segs = st === "running" ? 3 : st === "idle" ? 0 : 3;
+  for (let i = 0; i < segs; i++) {
+    const a0 = -Math.PI / 2 + i * (Math.PI * 2 / 3) + (st === "running" ? t * 0.002 : 0);
+    ctx.beginPath(); ctx.arc(cx, cy, R * 0.98, a0 + 0.1, a0 + Math.PI * 2 / 3 - 0.1); ctx.strokeStyle = ink; ctx.stroke();
+  }
+  ctx.fillStyle = ink; ctx.beginPath(); ctx.arc(cx, cy, R * 0.12 + Math.sin(t * 0.003) * 2 * e, 0, Math.PI * 2); ctx.fill();
+}
+const PTS = Array.from({ length: 420 }, (_, i) => { const y = 1 - (i / 419) * 2, r = Math.sqrt(1 - y * y), th = i * 2.39996; return [Math.cos(th) * r, y, Math.sin(th) * r]; });
+function drawB(ctx, w, h, t) {
+  const cx = w / 2, cy = h / 2, R = Math.min(w, h) * 0.38, e = energy();
+  const rot = t * 0.00025 * (0.5 + e), c = Math.cos(rot), s = Math.sin(rot);
+  const col = st === "waiting" ? [242, 165, 65] : st === "error" ? [226, 103, 91] : [79, 179, 169];
+  for (const [x, y, z] of PTS) {
+    const xr = x * c - z * s, zr = x * s + z * c;
+    const wob = st === "running" ? 1 + 0.05 * Math.sin(t * 0.004 + y * 6) : 1;
+    const px = cx + xr * R * wob, py = cy + y * R * wob, d = (zr + 1) / 2;
+    ctx.fillStyle = `rgba(${col},${0.15 + d * 0.75})`;
+    ctx.fillRect(px, py, 1 + d * 1.8, 1 + d * 1.8);
+  }
+  ctx.strokeStyle = `rgba(${col},.5)`; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.ellipse(cx, cy, R * 1.18, R * 0.3, -0.3, 0, Math.PI * 2); ctx.stroke();
+  if (st === "running") { const a = t * 0.003; ctx.fillStyle = `rgb(${col})`; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * R * 1.18 * Math.cos(-.3) - Math.sin(a) * R * .3 * Math.sin(-.3), cy + Math.cos(a) * R * 1.18 * Math.sin(-.3) + Math.sin(a) * R * .3 * Math.cos(-.3), 4, 0, Math.PI * 2); ctx.fill(); }
+}
+function drawC(ctx, w, h, t) {
+  const mid = h / 2, e = energy(), n = Math.floor(w / 6);
+  const col = st === "waiting" ? "#e3b76b" : st === "error" ? "#d9826b" : "#93b89d";
+  ctx.fillStyle = col;
+  for (let i = 0; i < n; i++) {
+    const x = i * 6 + 2, u = i / n, env = Math.sin(u * Math.PI);
+    const amp = (st === "idle" || st === "approved") ? 2 : (Math.sin(t * 0.004 + i * 0.35) * 0.5 + Math.sin(t * 0.0023 + i * 0.13) * 0.5) * e * h * 0.32 * env;
+    const hh = Math.max(2, Math.abs(amp));
+    ctx.globalAlpha = 0.35 + env * 0.65;
+    ctx.fillRect(x, mid - hh, 3, hh * 2);
+  }
+  ctx.globalAlpha = 1;
+}
+const DRAW = { a: drawA, b: drawB, c: drawC };
+function loop(t) {
+  document.querySelectorAll("canvas.core-canvas").forEach(cv => {
+    const r = cv.getBoundingClientRect(); if (!r.width) return;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    if (cv.width !== Math.round(r.width * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); }
+    const ctx = cv.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, r.width, r.height);
+    DRAW[cv.dataset.core](ctx, r.width, r.height, reduce ? 0 : t);
+  });
+  if (!reduce && !document.hidden && render === "on") raf = requestAnimationFrame(loop);
+}
+function startLoop() { cancelAnimationFrame(raf); if (render === "on") raf = requestAnimationFrame(loop); }
+document.addEventListener("visibilitychange", startLoop);
+
+// ---- wiring ----
+const screen = document.getElementById("screen");
+function paint() {
+  screen.innerHTML = ({ a: viewA, b: viewB, c: viewC })[concept]();
+  document.getElementById("note").innerHTML = NOTES[concept];
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.c === concept)));
+  document.querySelectorAll("[data-s]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === st)));
+  document.querySelectorAll("[data-r]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.r === render)));
+  startLoop();
+}
+let runTimer = 0;
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.c) { concept = b.dataset.c; try { history.replaceState(null, "", "#" + concept); } catch {} }
+  else if (b.dataset.s) { st = b.dataset.s; dec = "承認"; }
+  else if (b.dataset.r) render = b.dataset.r;
+  else if (b.dataset.act === "run") { st = "running"; clearTimeout(runTimer); runTimer = setTimeout(() => { st = "waiting"; paint(); }, 1800); }
+  else if (b.dataset.act === "approve") { st = "approved"; dec = "承認"; }
+  else if (b.dataset.act === "reject") { st = "approved"; dec = "見送り"; }
+  else return;
+  paint();
+});
+const h = (location.hash || "").slice(1); if (["a", "b", "c"].includes(h)) concept = h;
+paint();
+</script>
