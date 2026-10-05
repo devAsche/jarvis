@@ -129,3 +129,7 @@ Git root/branch/HEADと未コミット・未追跡のCR001〜CR003差分、`AGEN
 クラウドの`claude/lucid-ramanujan-j3sem3`（HEAD `4b28993`）で現行UI・デモAPI・テスト・引継ぎ資料の存在を確認。`npm ci`、`npm test` 22/22合格、`npm run typecheck`合格、devで`/api/demo/state`の応答を確認。lint/buildは未実行。現行UIを1440×900と390×844で撮影（Canvas 1、横はみ出しなし）。
 
 A 朝の机、B 管制盤、C 対話の3案を単一HTML試作（API非接続）で作り、承認待ち・照合中・描画オフの各状態をデスクトップと390pxで撮影。保存先`docs/design/ui-rebuild-2026-10-05/`。`src/`、API、fixture、依存は未変更。参考サイトの再調査、GPU計測、R3F版コアは未実施。次の1件: ユーザーの案選択。
+
+## 2026-10-05 / Claude Code（クラウド）/ 案D SF HUD
+
+GitHubアクセス復旧を確認し`claude/lucid-ramanujan-j3sem3`をpush。ユーザーの参考画像（青いHUD調）と「SFかつ高級感」の要望を受け、`prototypes/hud.html`（蒼/黒金、状態・描画オフ切替）を追加。商標・ロゴ・映画意匠は不使用。1440と390で撮影し横はみ出しなし。`src/`未変更。最終選択待ち。

@@ -1,0 +1,485 @@
+<title>JARVIS HUD 試作</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Share+Tech+Mono&display=swap">
+<style>
+/* Layout: HUD instrument deck — date ruler on top, gauges left, radial core centre with
+   leader-line callouts to each fixture source, decision + brief right, round dock below.
+   Deliberately single dark look; palette swaps between 蒼 (ice blue) and 黒金 (obsidian gold). */
+:root {
+  color-scheme: dark;
+  --void: #01060c;
+  --deep: #041322;
+  --glass: rgba(6, 28, 48, .62);
+  --line: rgba(86, 200, 255, .38);
+  --line-soft: rgba(86, 200, 255, .14);
+  --glow: #56c8ff;
+  --glow-hi: #b8ecff;
+  --ink: #e6f6ff;
+  --sub: #8fb4cc;
+  --gold: #e8bf6a;
+  --gold-soft: rgba(232, 191, 106, .16);
+  --alert: #ff7a59;
+  --ok: #5ef0c4;
+  --font-num: "Rajdhani", "Share Tech Mono", ui-monospace, sans-serif;
+  --font-mono: "Share Tech Mono", ui-monospace, monospace;
+  --font-jp: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+.pal-gold {
+  --void: #050403; --deep: #120e08; --glass: rgba(28, 22, 12, .66);
+  --line: rgba(232, 191, 106, .42); --line-soft: rgba(232, 191, 106, .14);
+  --glow: #e8bf6a; --glow-hi: #fff0c8; --ink: #f6efe2; --sub: #bba98a;
+  --gold: #7fd8ff; --gold-soft: rgba(127, 216, 255, .14);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--void); color: var(--ink); }
+body { font-family: var(--font-jp); }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--glow-hi); outline-offset: 3px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* prototype switcher (not part of the design) */
+.proto { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; background: #0b0f14; border-bottom: 1px solid #1d2630; font-size: 13px; color: #9fb0c0; }
+.proto strong { color: #e8eef4; font-size: 14px; }
+.proto .grp { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.proto button { background: #141b23; border: 1px solid #26313d; border-radius: 999px; padding: 4px 12px; cursor: pointer; color: #d6e0ea; font-size: 13px; }
+.proto button[aria-pressed="true"] { border-color: #56c8ff; color: #56c8ff; }
+
+/* ---------- deck ---------- */
+.deck { position: relative; min-height: 940px; overflow: hidden; font-size: 16px; line-height: 1.6;
+  background:
+    radial-gradient(ellipse 55% 60% at 50% 46%, color-mix(in srgb, var(--glow) 13%, transparent), transparent 70%),
+    radial-gradient(ellipse 120% 90% at 50% 0%, var(--deep), var(--void) 72%);
+  display: grid; grid-template-columns: 300px minmax(0, 1fr) 380px; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 0 22px; padding: 0 22px 18px; }
+.deck::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(var(--line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size: 48px 48px; mask-image: radial-gradient(ellipse 70% 70% at 50% 45%, #000 20%, transparent 85%); opacity: .55; }
+.deck::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 3px); }
+.deck > * { position: relative; z-index: 1; min-width: 0; }
+
+/* header */
+.top { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px 22px; flex-wrap: wrap; padding: 16px 0 8px; }
+.mark { display: flex; align-items: center; gap: 12px; }
+.mark svg { width: 34px; height: 34px; }
+.mark b { font-family: var(--font-num); font-weight: 700; font-size: 26px; letter-spacing: .14em; color: var(--glow-hi); text-shadow: 0 0 14px var(--glow); }
+.mark span { font-size: 13px; color: var(--sub); }
+.demo { font-family: var(--font-jp); font-size: 14px; font-weight: 700; color: var(--gold); padding: 4px 14px; border: 1px solid var(--gold); background: var(--gold-soft);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+.top .right { margin-left: auto; display: flex; gap: 18px; align-items: center; font-size: 14px; color: var(--sub); flex-wrap: wrap; }
+.top .right .clock { font-family: var(--font-num); font-size: 24px; font-weight: 600; color: var(--ink); letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+.voice-chip { display: inline-flex; align-items: center; gap: 8px; }
+.voice-chip i { width: 8px; height: 8px; border-radius: 50%; background: var(--sub); box-shadow: 0 0 0 3px var(--line-soft); }
+
+/* date ruler: the real month */
+.ruler { grid-column: 1 / -1; display: grid; grid-template-columns: auto repeat(31, minmax(0, 1fr)); align-items: end; gap: 0; border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 18px; }
+.ruler .ym { font-family: var(--font-num); font-weight: 600; color: var(--sub); padding-right: 14px; font-size: 14px; }
+.ruler span { font-family: var(--font-num); font-size: 13px; color: var(--sub); text-align: center; position: relative; padding-bottom: 6px; font-variant-numeric: tabular-nums; }
+.ruler span::after { content: ""; position: absolute; left: 50%; bottom: -6px; height: 5px; width: 1px; background: var(--line); }
+.ruler span.wk { color: color-mix(in srgb, var(--sub) 60%, transparent); }
+.ruler span.today { color: var(--void); background: var(--glow); font-weight: 700; box-shadow: 0 0 16px var(--glow); }
+.ruler span.ev::before { content: ""; position: absolute; left: 50%; top: -8px; width: 5px; height: 5px; margin-left: -2.5px; transform: rotate(45deg); background: var(--gold); }
+
+/* HUD panel with chamfered frame */
+.hp { --c: 14px; position: relative; padding: 18px 20px; isolation: isolate; }
+.hp::before, .hp::after { content: ""; position: absolute; z-index: -1; clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c)); }
+.hp::before { inset: 0; background: linear-gradient(160deg, var(--line), var(--line-soft) 40%, var(--line-soft) 60%, var(--line)); }
+.hp::after { inset: 1px; background: linear-gradient(180deg, color-mix(in srgb, var(--glow) 7%, var(--glass)), var(--glass)); backdrop-filter: blur(6px); }
+.hp .corner { position: absolute; width: 12px; height: 12px; border-color: var(--glow); border-style: solid; border-width: 0; }
+.hp .corner.tr { top: -1px; right: -1px; border-top-width: 2px; border-right-width: 2px; }
+.hp .corner.bl { bottom: -1px; left: -1px; border-bottom-width: 2px; border-left-width: 2px; }
+.hp h2 { margin: 0 0 12px; font-size: 15px; font-weight: 500; color: var(--sub); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.hp h2 .code { font-family: var(--font-mono); font-size: 12px; color: color-mix(in srgb, var(--glow) 70%, var(--sub)); }
+.col { display: grid; gap: 18px; align-content: start; }
+
+/* left: date dial */
+.dial { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 16px; align-items: center; }
+.dial svg { width: 132px; height: 132px; }
+.dial .d-num { font-family: var(--font-num); font-weight: 700; font-size: 46px; fill: var(--glow-hi); }
+.dial .d-mon { font-size: 13px; fill: var(--sub); font-family: var(--font-jp); }
+.dial dl { margin: 0; display: grid; gap: 6px; font-size: 14px; }
+.dial dt { color: var(--sub); font-size: 12px; }
+.dial dd { margin: 0 0 4px; font-family: var(--font-num); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.dial dd small { font-family: var(--font-jp); font-size: 13px; color: var(--sub); font-weight: 400; margin-left: 4px; }
+
+.links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: center; }
+.links svg { width: 54px; height: 54px; display: block; margin: 0 auto 4px; }
+.links .nm { font-size: 13px; }
+.links .st { font-size: 12px; color: var(--sub); }
+
+.log { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 14px; }
+.log li { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; }
+.log time { font-family: var(--font-mono); color: var(--glow); font-size: 13px; padding-top: 1px; }
+.log .src { display: block; font-family: var(--font-mono); font-size: 12px; color: var(--sub); }
+
+/* centre: core */
+.stage { display: grid; justify-items: center; align-content: start; gap: 6px; }
+.core-wrap { position: relative; width: min(78%, 560px); aspect-ratio: 1; max-width: 100%; }
+.core-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.core-2d { position: absolute; inset: 0; display: none; place-items: center; }
+.render-off .core-wrap canvas { display: none; }
+.render-off .core-2d { display: grid; }
+.core-2d svg { width: 78%; height: 78%; }
+.core-center { position: absolute; left: 0; right: 0; top: 23.5%; display: grid; justify-items: center; pointer-events: none; text-align: center; }
+.core-center .cc { display: grid; gap: 0; padding: 2px 10px; background: color-mix(in srgb, var(--void) 55%, transparent); }
+.core-center .cc b { font-family: var(--font-num); font-size: 15px; letter-spacing: .2em; color: var(--glow-hi); font-weight: 600; }
+.core-center .cc span { font-family: var(--font-mono); font-size: 12px; color: var(--sub); }
+.callouts { position: absolute; inset: 0; pointer-events: none; }
+.callouts svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.co { position: absolute; width: 196px; pointer-events: auto; --c: 10px; padding: 10px 14px; font-size: 14px; }
+.co .k { font-family: var(--font-mono); font-size: 12px; color: var(--glow); display: flex; justify-content: space-between; gap: 6px; }
+.co .v { font-size: 15px; font-weight: 500; line-height: 1.45; margin-top: 2px; }
+.co .bar { height: 3px; background: var(--line-soft); margin-top: 8px; position: relative; overflow: hidden; }
+.co .bar i { position: absolute; inset: 0 auto 0 0; background: var(--glow); box-shadow: 0 0 10px var(--glow); width: 0; transition: width .6s ease; }
+.co.done .bar i { width: 100%; }
+.co.run .bar i { width: 55%; }
+.co.fail .bar i { width: 100%; background: var(--alert); box-shadow: 0 0 10px var(--alert); }
+.co1 { left: -13%; top: 9%; } .co2 { right: -14%; top: 34%; } .co3 { left: -11%; bottom: 8%; }
+
+.status { text-align: center; display: grid; gap: 4px; margin-top: -8px; }
+.status .s-tag { font-family: var(--font-mono); font-size: 13px; color: var(--glow); }
+.status strong { font-size: 30px; font-weight: 700; line-height: 1.3; text-shadow: 0 0 22px color-mix(in srgb, var(--glow) 55%, transparent); text-wrap: balance; }
+.status.waiting strong { color: var(--gold); text-shadow: 0 0 22px color-mix(in srgb, var(--gold) 45%, transparent); }
+.status.error strong { color: var(--alert); }
+.status p { margin: 0 auto; max-width: 34em; color: var(--sub); font-size: 16px; }
+.cmd { display: flex; gap: 10px; width: min(100%, 620px); margin-top: 14px; --c: 12px; padding: 8px 8px 8px 18px; align-items: center; }
+.cmd .p { font-family: var(--font-num); color: var(--glow); font-size: 20px; font-weight: 700; }
+.cmd input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 16px; color: var(--ink); }
+.cmd input::placeholder { color: var(--sub); }
+.btn { position: relative; cursor: pointer; border: 0; padding: 10px 20px; font-weight: 700; font-size: 15px; color: var(--void); background: var(--glow);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); box-shadow: 0 0 20px var(--glow); white-space: nowrap; }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn.gold { background: var(--gold); color: #1b1305; }
+
+/* right: decision */
+.decide { --c: 18px; }
+.decide::before { background: linear-gradient(160deg, var(--gold), color-mix(in srgb, var(--gold) 25%, transparent) 45%, color-mix(in srgb, var(--gold) 25%, transparent) 60%, var(--gold)); }
+.decide::after { background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 12%, var(--glass)), var(--glass)); }
+.decide .corner { border-color: var(--gold); }
+.decide .lbl { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; font-weight: 700; color: var(--gold); flex-wrap: wrap; }
+.decide .lbl .code { font-family: var(--font-mono); font-weight: 400; color: var(--sub); font-size: 12px; }
+.decide h3 { margin: 6px 0 8px; font-size: 21px; }
+.diff { display: grid; grid-template-columns: auto auto auto; align-items: end; gap: 6px 14px; justify-content: start; margin-bottom: 12px; }
+.diff .n { font-family: var(--font-num); font-weight: 700; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.diff .n.to { color: var(--gold); text-shadow: 0 0 18px color-mix(in srgb, var(--gold) 50%, transparent); }
+.diff .arr { color: var(--sub); font-size: 20px; }
+.diff .cap { font-size: 12px; color: var(--sub); }
+.meter { height: 6px; background: var(--line-soft); position: relative; margin: 4px 0 14px; }
+.meter i { position: absolute; top: 0; bottom: 0; left: 0; background: var(--glow); }
+.meter b { position: absolute; top: -3px; bottom: -3px; background: repeating-linear-gradient(-45deg, var(--gold) 0 3px, transparent 3px 6px); }
+.facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; font-size: 14px; margin: 0 0 14px; }
+.facts dt { color: var(--sub); }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+.facts dd.mono { font-family: var(--font-mono); }
+.acts { display: flex; gap: 10px; flex-wrap: wrap; }
+.fine { font-size: 13px; color: var(--sub); margin-top: 12px; line-height: 1.6; }
+.done-stamp { font-weight: 700; color: var(--ok); }
+
+.brief { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.brief li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+.brief li:first-child { border-top: 0; padding-top: 0; }
+.brief .kind { font-size: 13px; font-weight: 700; color: var(--glow); }
+.brief .kind.alert { color: var(--gold); }
+.brief p { margin: 0; font-size: 15px; }
+.brief .src { font-family: var(--font-mono); font-size: 12px; color: var(--sub); }
+.nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+.nums div span { display: block; font-size: 12px; color: var(--sub); }
+.nums div b { font-family: var(--font-num); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.nums div b.unk { font-family: var(--font-jp); font-size: 18px; color: var(--sub); }
+.nums div small { font-size: 12px; color: var(--sub); margin-left: 4px; }
+
+/* dock */
+.dock { grid-column: 1 / -1; display: flex; justify-content: center; gap: 26px; flex-wrap: wrap; padding-top: 20px; margin-top: 10px; border-top: 1px solid var(--line-soft); }
+.dk { background: none; border: 0; cursor: pointer; display: grid; justify-items: center; gap: 6px; color: var(--sub); font-size: 13px; position: relative; }
+.dk .ring { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; position: relative;
+  background: radial-gradient(circle, color-mix(in srgb, var(--glow) 18%, transparent), transparent 70%); box-shadow: inset 0 0 0 1px var(--line), 0 0 0 4px transparent; transition: box-shadow .2s, transform .2s; }
+.dk .ring::before { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--glow); border-right-color: color-mix(in srgb, var(--glow) 40%, transparent); }
+.dk svg { width: 26px; height: 26px; stroke: var(--glow-hi); fill: none; stroke-width: 1.6; }
+.dk:hover .ring { transform: translateY(-2px); box-shadow: inset 0 0 0 1px var(--glow), 0 0 22px color-mix(in srgb, var(--glow) 50%, transparent); }
+.dk:hover { color: var(--ink); }
+.dk .badge { position: absolute; top: -2px; right: -4px; min-width: 20px; height: 20px; border-radius: 10px; background: var(--gold); color: #1b1305; font-size: 12px; font-weight: 700; display: grid; place-items: center; box-shadow: 0 0 12px var(--gold); }
+.dk.gold .ring::before { border-top-color: var(--gold); border-right-color: color-mix(in srgb, var(--gold) 40%, transparent); }
+
+/* motion */
+@media (prefers-reduced-motion: no-preference) {
+  .motion .dk .ring::before { animation: spin 9s linear infinite; }
+  .motion .dk:nth-child(2n) .ring::before { animation-direction: reverse; animation-duration: 13s; }
+  .motion .voice-chip i { animation: blink 2.4s ease-in-out infinite; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes blink { 50% { opacity: .35; } }
+
+/* narrow */
+@media (max-width: 1180px) {
+  .deck { grid-template-columns: minmax(0, 1fr) 360px; }
+  .col.left { grid-column: 1 / -1; grid-row: auto; grid-template-columns: repeat(3, minmax(0, 1fr)); order: 5; margin-top: 18px; }
+}
+@media (max-width: 760px) {
+  .deck { grid-template-columns: minmax(0, 1fr); padding: 0 16px 110px; min-height: 0; }
+  .top { padding-top: 12px; order: -5; }
+  .ruler { order: -4; }
+  .top .right { margin-left: 0; gap: 12px; }
+  .ruler { grid-template-columns: auto repeat(9, minmax(0, 1fr)); }
+  .ruler span.far { display: none; }
+  .col.left { grid-template-columns: minmax(0, 1fr); }
+  .col.right { order: -1; }
+  .stage { order: -2; }
+  .col.right { order: -1; margin-top: 12px; }
+  .core-wrap { width: 100%; }
+  .core-center { top: 22%; }
+  .callouts { display: none; }
+  .mobile-sources { display: grid !important; }
+  .status strong { font-size: 24px; }
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; gap: 4px; justify-content: space-around; flex-wrap: nowrap; background: color-mix(in srgb, var(--void) 88%, transparent); backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 10px 6px calc(10px + env(safe-area-inset-bottom, 0px)); margin: 0; }
+  .dk .ring { width: 46px; height: 46px; }
+  .dk svg { width: 20px; height: 20px; }
+  .dk { font-size: 12px; }
+  .dk.opt { display: none; }
+  .diff .n { font-size: 30px; }
+}
+.mobile-sources { display: none; gap: 8px; width: 100%; }
+.mobile-sources .co { position: relative; width: auto; left: auto; right: auto; top: auto; bottom: auto; }
+</style>
+
+<div class="proto" aria-label="試作の切替（デザインの一部ではありません）">
+  <strong>JARVIS HUD 試作 · DEMO</strong>
+  <span class="grp">配色: <button data-pal="blue" aria-pressed="true">蒼</button><button data-pal="gold" aria-pressed="false">黒金</button></span>
+  <span class="grp">状態: <button data-s="idle" aria-pressed="false">通常</button><button data-s="running" aria-pressed="false">照合中</button><button data-s="waiting" aria-pressed="true">承認待ち</button><button data-s="approved" aria-pressed="false">承認後</button><button data-s="error" aria-pressed="false">エラー</button></span>
+  <span class="grp">描画: <button data-r="on" aria-pressed="true">3D相当</button><button data-r="off" aria-pressed="false">オフ / GPU失敗</button></span>
+</div>
+
+<main class="deck motion" id="deck"></main>
+
+<script>
+// Fixture-equivalent demo data (src/fixtures/index.ts). Example values only, never sales results.
+const D = { order: "demo-order-001", amount: 4900, est: 900, quoted: 1550, mix: 2, account: "Shopify US Pet Store", expires: "10/06 09:30", run: "7c1e09a2", generated: "08:12" };
+const yen = n => "¥" + n.toLocaleString("ja-JP");
+let st = "waiting", render = "on", pal = "blue", dec = "承認";
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const STATE = {
+  idle:     { tag: "STANDBY", t: "待機中", p: "実サービスは未接続です。「朝の報告」でサンプル出典の照合を始めます。" },
+  running:  { tag: "FIXTURE READ", t: "サンプル出典を照合中", p: "注文・問い合わせ・予定の3系統を読み取っています。外部への書き込みはしません。" },
+  waiting:  { tag: "AWAITING HUMAN", t: "配送費の確認をお願いします", p: "朝の報告は出典4件で作成済み。判断が必要なのは1件です。" },
+  approved: { tag: "RECORDED", t: "判断を記録しました", p: "模擬判断として記録しました。発注・支払い・出荷は行っていません。" },
+  error:    { tag: "READ FAILED", t: "出典を照合できません", p: "MIXの出典IDが一致しないため、報告を作りませんでした。外部操作はしていません。" },
+};
+const decided = () => st === "approved";
+const hasBrief = () => st === "waiting" || st === "approved";
+function srcState(i) {
+  if (st === "idle") return ["", "待機"];
+  if (st === "running") return i === 0 ? ["done", "読取済"] : ["run", "読取中"];
+  if (st === "error") return i === 1 ? ["fail", "不一致"] : ["", "中止"];
+  return ["done", "読取済"];
+}
+const SOURCES = [
+  { k: "fixture.shopify", id: "demo_001", v: `注文1件 送料 ${yen(D.est)} → ${yen(D.quoted)}` },
+  { k: "fixture.gmail", id: "demo_002 / 004", v: `MIX問い合わせ ${D.mix}件 返信待ち` },
+  { k: "fixture.calendar", id: "demo_005", v: "明日 14:00 作業予定 / 集中枠2時間" },
+];
+const co = (s, i, cls) => { const [c, l] = srcState(i); return `<div class="hp co ${cls} ${c}"><div class="k"><span>${s.k}</span><span>${l}</span></div><div class="v">${s.v}</div><div class="k" style="color:var(--sub)"><span>${s.id}</span><span>DEMO</span></div><div class="bar"><i></i></div></div>`; };
+
+function ruler() {
+  let h = `<span class="ym">2026.10</span>`;
+  for (let d = 1; d <= 31; d++) {
+    const dow = new Date(2026, 9, d).getDay();
+    const cls = [d === 5 ? "today" : "", dow === 0 || dow === 6 ? "wk" : "", d === 6 ? "ev" : "", Math.abs(d - 7) > 4 ? "far" : ""].join(" ");
+    h += `<span class="${cls}">${String(d).padStart(2, "0")}</span>`;
+  }
+  return `<nav class="ruler" aria-label="2026年10月 · 今日は5日、6日に予定あり">${h}</nav>`;
+}
+function linkRing(name) {
+  return `<div><svg viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="22" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="3 4"/><circle cx="27" cy="27" r="14" fill="none" stroke="var(--line-soft)" stroke-width="6"/><text x="27" y="31" text-anchor="middle" font-family="Rajdhani" font-weight="700" font-size="13" fill="var(--sub)">${name[0]}</text></svg><div class="nm">${name}</div><div class="st">未接続</div></div>`;
+}
+const ICON = {
+  brief: '<path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7M9 7h3"/>',
+  approve: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  nums: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  log: '<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',
+  voice: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>',
+  set: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+};
+const dk = (key, label, extra = "", badge = "") => `<button class="dk ${extra}" ${key === "brief" ? 'data-act="run"' : key === "approve" ? 'data-act="focus-decide"' : ""}><span class="ring"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[key]}</svg>${badge}</span>${label}</button>`;
+
+function view() {
+  const S = STATE[st];
+  const gap = D.quoted - D.est;
+  return `
+  <header class="top">
+    <div class="mark"><svg viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="15" fill="none" stroke="var(--glow)" stroke-width="1.5"/><circle cx="17" cy="17" r="9" fill="none" stroke="var(--glow)" stroke-width="3" stroke-dasharray="10 4.1"/><circle cx="17" cy="17" r="3" fill="var(--glow-hi)"/></svg><div><b>JARVIS</b><br><span>Business OS</span></div></div>
+    <span class="demo">DEMO · 実サービス未接続 · 外部操作なし</span>
+    <div class="right"><span class="voice-chip"><i></i>音声 モック · ミュート</span><span>東京</span><span class="clock" id="clock">08:14:00</span></div>
+  </header>
+  ${ruler()}
+  <aside class="col left" aria-label="日付と接続">
+    <section class="hp"><span class="corner tr"></span><span class="corner bl"></span>
+      <div class="dial">
+        <svg viewBox="0 0 132 132" aria-hidden="true">
+          ${Array.from({ length: 31 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI * 2 / 31, r1 = 60, r2 = i === 4 ? 49 : 54; return `<line x1="${66 + Math.cos(a) * r1}" y1="${66 + Math.sin(a) * r1}" x2="${66 + Math.cos(a) * r2}" y2="${66 + Math.sin(a) * r2}" stroke="${i <= 4 ? "var(--glow)" : "var(--line)"}" stroke-width="${i === 4 ? 3 : 2}"/>`; }).join("")}
+          <circle cx="66" cy="66" r="44" fill="none" stroke="var(--line-soft)" stroke-width="1"/>
+          <text x="66" y="56" text-anchor="middle" class="d-mon">10月 月</text>
+          <text x="66" y="92" text-anchor="middle" class="d-num">05</text>
+        </svg>
+        <dl><dt>朝の報告</dt><dd>${hasBrief() ? D.generated : "--:--"}<small>${hasBrief() ? "作成" : "未作成"}</small></dd><dt>次の予定（例）</dt><dd>10/06 14:00</dd></dl>
+      </div>
+    </section>
+    <section class="hp"><span class="corner tr"></span><span class="corner bl"></span><h2>接続 <span class="code">0 / 4 LINKED</span></h2>
+      <div class="links">${["Shopify", "Gmail", "Calendar", "TickTick"].map(linkRing).join("")}</div></section>
+    <section class="hp"><span class="corner tr"></span><span class="corner bl"></span><h2>記録 <span class="code">AUDIT · DEMO</span></h2>
+      <ul class="log">
+        ${decided() ? `<li><time>08:16</time><div>模擬${dec}を記録 · 外部効果なし<span class="src">demo-intent-001</span></div></li>` : ""}
+        ${st === "idle" ? `<li><time>--:--</time><div>まだ記録はありません</div></li>` : `
+        ${hasBrief() ? `<li><time>08:12</time><div>報告を作成 · 承認待ち<span class="src">run ${D.run}</span></div></li>` : ""}
+        ${st === "error" ? `<li><time>08:12</time><div>照合に失敗<span class="src">run ${D.run}</span></div></li>` : ""}
+        <li><time>08:12</time><div>出典の照合を開始<span class="src">run ${D.run}</span></div></li>`}
+      </ul></section>
+  </aside>
+
+  <section class="stage" aria-label="JARVISの状態">
+    <div class="core-wrap">
+      <canvas id="core" aria-hidden="true"></canvas>
+      <div class="core-2d" aria-hidden="true"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="92" fill="none" stroke="var(--line)" stroke-width="1"/><circle cx="100" cy="100" r="70" fill="none" stroke="var(--glow)" stroke-width="5" stroke-dasharray="70 8"/><circle cx="100" cy="100" r="40" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="100" cy="100" r="16" fill="var(--glow)" opacity=".7"/></svg></div>
+      <div class="core-center"><div class="cc"><b>${S.tag}</b><span>${st === "idle" ? "NO ACTIVE TASK" : "RUN " + D.run}</span></div></div>
+      <div class="callouts">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points="10,20 22,20 34,34" fill="none" stroke="var(--line)" stroke-width=".25"/>
+          <polyline points="88,44 78,44 68,47" fill="none" stroke="var(--line)" stroke-width=".25"/>
+          <polyline points="14,82 26,82 36,68" fill="none" stroke="var(--line)" stroke-width=".25"/>
+        </svg>
+        ${co(SOURCES[0], 0, "co1")}${co(SOURCES[1], 1, "co2")}${co(SOURCES[2], 2, "co3")}
+      </div>
+    </div>
+    <div class="status ${st}" aria-live="polite"><span class="s-tag">${st === "idle" ? "稼働中タスクなし" : "デモタスク " + D.run + " · " + ({ running: "照合中", waiting: "承認待ち", approved: "完了", error: "失敗" })[st]}</span><strong>${S.t}</strong><p>${S.p}</p></div>
+    <div class="mobile-sources">${SOURCES.map((s, i) => co(s, i, "")).join("")}</div>
+    <form class="hp cmd" onsubmit="return false"><span class="p">›</span><label class="sr" for="cmd">指示</label><input id="cmd" placeholder="指示を入力 — 朝の報告 / 承認 / 数字"><button class="btn" type="button" data-act="run">朝の報告</button></form>
+  </section>
+
+  <aside class="col right" aria-label="判断と報告">
+    <section class="hp decide" id="decide" tabindex="-1" aria-label="判断が必要なこと"><span class="corner tr"></span><span class="corner bl"></span>
+      <div class="lbl"><span>${decided() ? "記録済み" : "判断が必要 · 1件"}</span><span class="code">期限 ${D.expires}</span></div>
+      <h3>サンプル注文の配送費差額</h3>
+      <div class="diff"><div><div class="cap">見積</div><div class="n">${yen(D.est)}</div></div><div class="arr">→</div><div><div class="cap">請求 · +${yen(gap)}</div><div class="n to">${yen(D.quoted)}</div></div></div>
+      <div class="meter" aria-hidden="true"><i style="width:${D.est / D.quoted * 100}%"></i><b style="left:${D.est / D.quoted * 100}%;right:0"></b></div>
+      <dl class="facts"><dt>対象</dt><dd>${D.account}</dd><dt>注文</dt><dd class="mono">${D.order} · ${yen(D.amount)}（例示）</dd><dt>状態</dt><dd>${decided() ? `<span class="done-stamp">模擬${dec}済み · 08:16</span>` : "確認待ち"}</dd></dl>
+      ${decided() ? "" : `<div class="acts"><button class="btn gold" data-act="approve">模擬承認する</button><button class="btn ghost" data-act="reject">見送る</button></div>`}
+      <div class="fine">記録しても発注・支払い・出荷は行いません。音声の「はい」では確定しません。</div>
+    </section>
+    <section class="hp"><span class="corner tr"></span><span class="corner bl"></span><h2>朝の報告 <span class="code">${hasBrief() ? "SRC 4 · " + D.generated : "NOT READY"}</span></h2>
+      ${hasBrief() ? `<ul class="brief">
+        <li><span class="kind alert">異常</span><div><p>送料が見積 ${yen(D.est)} → 請求 ${yen(D.quoted)}</p><span class="src">demo_001</span></div></li>
+        <li><span class="kind">保留</span><div><p>MIX問い合わせ ${D.mix}件が返信待ち</p><span class="src">demo_002, demo_004</span></div></li>
+        <li><span class="kind">今日</span><div><p>2時間の集中枠を確保できます</p><span class="src">demo_005</span></div></li>
+        <li><span class="kind">提案</span><div><p>広告より先に商品ページを見直す</p><span class="src">demo-rule</span></div></li></ul>`
+      : `<p style="margin:0;color:var(--sub)">${st === "running" ? "照合が終わると、出典ID付きでここに並びます。" : st === "error" ? "照合に失敗したため作成していません。" : "まだ作成していません。"}</p>`}
+    </section>
+    <section class="hp"><span class="corner tr"></span><span class="corner bl"></span><h2>事業の数字 <span class="code">SAMPLE</span></h2>
+      <div class="nums"><div><span>注文額の例</span><b>${yen(D.amount)}</b></div><div><span>MIX問い合わせ</span><b>${D.mix}<small>件</small></b></div><div><span>利益</span><b class="unk">不明</b></div><div><span>実データ同期</span><b class="unk">なし</b></div></div></section>
+  </aside>
+
+  <nav class="dock" aria-label="主要操作">
+    ${dk("brief", "朝の報告")}${dk("approve", "承認", "gold", decided() ? "" : '<span class="badge">1</span>')}${dk("nums", "数字")}${dk("log", "記録")}${dk("voice", "音声")}${dk("set", "表示設定", "opt")}
+  </nav>`;
+}
+
+// ---- core: canvas stand-in for the R3F presence ----
+let raf = 0;
+function css(v) { return getComputedStyle(document.getElementById("deck")).getPropertyValue(v).trim(); }
+function drawCore(t) {
+  const cv = document.getElementById("core"); if (!cv) return;
+  const r = cv.getBoundingClientRect(); if (!r.width) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2), W = r.width, H = r.height;
+  if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 * 0.9;
+  const glow = css("--glow"), hi = css("--glow-hi"), gold = css("--gold"), alert = css("--alert");
+  const speed = { idle: .35, running: 1.6, waiting: .7, approved: .3, error: .2 }[st];
+  const T = t * 0.001 * speed;
+  const accent = st === "waiting" ? gold : st === "error" ? alert : glow;
+  g.lineCap = "butt";
+  g.globalCompositeOperation = "lighter";
+  const arc = (rad, a0, a1, w, col, alpha = 1, blur = 0) => { g.beginPath(); g.arc(cx, cy, rad, a0, a1); g.lineWidth = w; g.strokeStyle = col; g.globalAlpha = alpha; g.shadowBlur = blur; g.shadowColor = col; g.stroke(); };
+
+  // outer tick ring
+  g.save(); g.translate(cx, cy); g.rotate(-T * 0.08);
+  for (let i = 0; i < 180; i++) {
+    const a = i / 180 * Math.PI * 2, long = i % 15 === 0, mid = i % 5 === 0;
+    const r1 = R, r2 = R - (long ? 14 : mid ? 8 : 4);
+    g.beginPath(); g.moveTo(Math.cos(a) * r1, Math.sin(a) * r1); g.lineTo(Math.cos(a) * r2, Math.sin(a) * r2);
+    g.strokeStyle = glow; g.globalAlpha = long ? .9 : mid ? .55 : .28; g.lineWidth = long ? 1.6 : 1; g.shadowBlur = 0; g.stroke();
+  }
+  g.restore();
+  arc(R + 6, 0, Math.PI * 2, 1, glow, .25);
+
+  // segmented ring (clockwise)
+  const segs = [0.18, 0.05, 0.3, 0.04, 0.12, 0.08, 0.22, 0.06, 0.15, 0.1];
+  let a = T * 0.3;
+  segs.forEach((s, i) => { const len = s * Math.PI * 2 * 0.62; if (i % 2 === 0) arc(R * 0.86, a, a + len, 6, glow, .75, 10); a += len + 0.05; });
+  // thin counter ring with dashes
+  g.setLineDash([2, 6]); arc(R * 0.8, -T * 0.5, -T * 0.5 + Math.PI * 2, 2, hi, .5); g.setLineDash([]);
+
+  // three source arcs = three fixture lanes
+  for (let i = 0; i < 3; i++) {
+    const base = -Math.PI / 2 + i * Math.PI * 2 / 3 + 0.08, span = Math.PI * 2 / 3 - 0.16;
+    arc(R * 0.7, base, base + span, 12, glow, .14);
+    let fill = 0, col = glow;
+    if (st === "running") fill = i === 0 ? 1 : (0.35 + 0.3 * Math.sin(t * 0.004 + i)) ;
+    else if (st === "error") { fill = 1; col = i === 1 ? alert : glow; }
+    else if (st !== "idle") fill = 1;
+    if (st === "error" && i !== 1) { arc(R * 0.7, base, base + span, 12, glow, .25); continue; }
+    if (fill) arc(R * 0.7, base, base + span * fill, 12, col, .85, 16);
+  }
+  // inner instrument ring with notches
+  arc(R * 0.56, 0, Math.PI * 2, 1.2, glow, .55);
+  g.save(); g.translate(cx, cy); g.rotate(T * 0.6);
+  for (let i = 0; i < 4; i++) { g.rotate(Math.PI / 2); g.beginPath(); g.moveTo(R * 0.56, 0); g.lineTo(R * 0.6, -5); g.lineTo(R * 0.6, 5); g.closePath(); g.fillStyle = hi; g.globalAlpha = .8; g.fill(); }
+  g.restore();
+  // radar sweep
+  if (st === "running" || st === "idle") {
+    const sw = T * 1.2, grd = g.createConicGradient ? g.createConicGradient(sw, cx, cy) : null;
+    if (grd) { grd.addColorStop(0, "rgba(255,255,255,0)"); grd.addColorStop(.92, "rgba(255,255,255,0)"); grd.addColorStop(1, glow); g.globalAlpha = .25; g.fillStyle = grd; g.beginPath(); g.arc(cx, cy, R * 0.55, 0, Math.PI * 2); g.fill(); }
+  }
+  // iris: 12 blades
+  g.save(); g.translate(cx, cy); g.rotate(-T * 0.9);
+  for (let i = 0; i < 12; i++) {
+    g.rotate(Math.PI / 6);
+    g.beginPath(); g.arc(0, 0, R * 0.36, -0.2, 0.2); g.arc(0, 0, R * 0.24, 0.16, -0.16, true); g.closePath();
+    g.fillStyle = accent; g.globalAlpha = .35 + .25 * Math.sin(t * 0.002 * speed + i); g.shadowBlur = 12; g.shadowColor = accent; g.fill();
+  }
+  g.restore();
+  // core light
+  const pulse = 1 + 0.06 * Math.sin(t * 0.003 * (speed + .3));
+  const rg = g.createRadialGradient(cx, cy, 0, cx, cy, R * 0.22 * pulse);
+  rg.addColorStop(0, "#ffffff"); rg.addColorStop(.25, hi); rg.addColorStop(.6, accent); rg.addColorStop(1, "rgba(0,0,0,0)");
+  g.globalAlpha = .95; g.shadowBlur = 0; g.fillStyle = rg; g.beginPath(); g.arc(cx, cy, R * 0.22 * pulse, 0, Math.PI * 2); g.fill();
+  arc(R * 0.18, 0, Math.PI * 2, 1.5, hi, .9, 8);
+  g.globalCompositeOperation = "source-over"; g.globalAlpha = 1; g.shadowBlur = 0;
+}
+function loop(t) { drawCore(reduce ? 0 : t); if (!reduce && !document.hidden && render === "on") raf = requestAnimationFrame(loop); }
+function startLoop() { cancelAnimationFrame(raf); if (render === "on") raf = requestAnimationFrame(loop); }
+document.addEventListener("visibilitychange", startLoop);
+setInterval(() => { const c = document.getElementById("clock"); if (c) { const n = new Date(); c.textContent = n.toLocaleTimeString("ja-JP", { hour12: false, timeZone: "Asia/Tokyo" }); } }, 1000);
+
+const deck = document.getElementById("deck");
+function paint() {
+  deck.className = `deck ${reduce ? "" : "motion"} ${render === "off" ? "render-off" : ""} ${pal === "gold" ? "pal-gold" : ""}`;
+  deck.innerHTML = view();
+  document.querySelectorAll("[data-s]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === st)));
+  document.querySelectorAll("[data-r]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.r === render)));
+  document.querySelectorAll("[data-pal]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.pal === pal)));
+  startLoop();
+}
+let timer = 0;
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.s) { st = b.dataset.s; dec = "承認"; }
+  else if (b.dataset.r) render = b.dataset.r;
+  else if (b.dataset.pal) pal = b.dataset.pal;
+  else if (b.dataset.act === "run") { st = "running"; clearTimeout(timer); timer = setTimeout(() => { st = "waiting"; paint(); }, 2200); }
+  else if (b.dataset.act === "approve") { st = "approved"; dec = "承認"; }
+  else if (b.dataset.act === "reject") { st = "approved"; dec = "見送り"; }
+  else if (b.dataset.act === "focus-decide") { document.getElementById("decide")?.focus(); document.getElementById("decide")?.scrollIntoView({ block: "center", behavior: "smooth" }); return; }
+  else return;
+  paint();
+});
+addEventListener("keydown", e => { if (e.key === "/" && document.activeElement?.id !== "cmd") { e.preventDefault(); document.getElementById("cmd")?.focus(); } });
+paint();
+</script>
