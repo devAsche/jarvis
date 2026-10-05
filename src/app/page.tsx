@@ -13,11 +13,15 @@ import { BriefingModal } from "../components/BriefingModal";
 import { DashboardModal } from "../components/DashboardModal";
 import { ApprovalModal } from "../components/ApprovalModal";
 import { VoiceControls } from "../components/VoiceControls";
+import { LoginScreen } from "../components/LoginScreen";
+import { auditLog, eventLog, jstDateTime, type AuditLike } from "../components/demoText";
 import { useJstNow } from "../components/useJstNow";
 import { Core2DFallback } from "../components/presence/Core2DFallback";
 import { CORE_TONES, LEGEND_TONES, toCoreTone, toSourceProgress, type CoreTone } from "../components/presence/CoreVisualState";
 
 import {
+  SourceLane,
+  DataProvenance,
   CoreState,
   GraphicsQuality,
   TaskRun,
@@ -54,8 +58,8 @@ const CORE_TAG: Record<CoreTone, string> = {
   review: "AWAITING HUMAN", recorded: "RECORDED", error: "CHECK FAILED", offline: "OFFLINE",
 };
 const TONE_TITLE: Record<CoreTone, string> = {
-  standby: "待機中", listening: "音声入力を模擬しています", working: "サンプル出典を照合中", speaking: "読み上げ中",
-  review: "配送費の確認をお願いします", recorded: "判断を記録しました", error: "確認できません", offline: "切断中（模擬）",
+  standby: "待機中", listening: "音声入力を模擬しています", working: "出典を読み取り中", speaking: "読み上げ中",
+  review: "確認をお願いします", recorded: "判断を記録しました", error: "確認できません", offline: "切断中（模擬）",
 };
 const RUN_STATUS: Record<TaskRun["status"], string> = { running: "照合中", waiting_approval: "承認待ち", succeeded: "完了", failed: "失敗" };
 
@@ -65,12 +69,18 @@ export default function JarvisApp() {
   const [notice, setNotice] = useState<string | null>(null);
   const [caption, setCaption] = useState("おはようございます。現在はデモモードです。「朝の報告」でサンプル出典の照合を始めます。");
 
-  const [generatedBriefing, setGeneratedBriefing] = useState<MorningBriefing>(initialBriefing);
+  const [mode, setMode] = useState<"DEMO" | "READ_ONLY">("DEMO");
+  const [needLogin, setNeedLogin] = useState(false);
+  const [provenance, setProvenance] = useState<DataProvenance>("DEMO");
+  const [lanes, setLanes] = useState<SourceLane[]>([]);
+  const [audit, setAudit] = useState<AuditLike[]>([]);
+  const [generatedBriefing, setGeneratedBriefing] = useState<MorningBriefing | null>(initialBriefing);
   const [events, setEvents] = useState<SourceEventEnvelope[]>(initialEvents);
   const [approvals, setApprovals] = useState<ApprovalItem[]>(initialApprovals);
   const [run, setRun] = useState<TaskRun | null>(null);
-  const [summary] = useState<BusinessSummary>(initialBusinessSummary);
-  const [systemStatus] = useState<SystemStatus>(initialSystemStatus);
+  const [summary, setSummary] = useState<BusinessSummary>(initialBusinessSummary);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus>(initialSystemStatus);
+  const [evidenceId, setEvidenceId] = useState<string | null>(null);
   const [drawer, setDrawer] = useState<"voice" | "settings" | null>(null);
   const now = useJstNow();
   const decisionRef = useRef<HTMLElement>(null);
@@ -108,16 +118,26 @@ export default function JarvisApp() {
   const applyRun = useCallback((next: TaskRun) => {
     setCoreState(next.operationalState.toUpperCase() as CoreState);
     setNotice(null);
-    if (next.status === "waiting_approval") setCaption("朝の報告を出典ID付きで作成しました。配送費の差額を確認してください。");
-    else if (next.status === "succeeded") setCaption("模擬判断を記録しました。発注・支払い・出荷は行っていません。");
-    else if (next.status === "failed") setCaption("出典が一致しないため報告を作りませんでした。外部操作はしていません。");
-    else setCaption("注文・問い合わせ・予定の3系統を読み取っています。外部への書き込みはしません。");
+    if (next.status === "waiting_approval") setCaption(next.mode === "READ_ONLY" ? `${next.reason}。右の確認待ちを見てください。` : "朝の報告を出典付きで作成しました。右の確認待ちを見てください。");
+    else if (next.status === "succeeded" && next.mode === "READ_ONLY" && next.reason.includes("失敗")) setCaption(`${next.reason}。外部への操作はしていません。`);
+    else if (next.status === "succeeded") setCaption("判断を記録しました。外部への操作はしていません。");
+    else if (next.status === "failed") setCaption(`報告を作れませんでした（${next.reason}）。外部操作はしていません。`);
+    else setCaption("出典を読み取っています。外部への書き込みはしません。");
   }, []);
 
   const refreshDemo = useCallback(async () => {
-    const response = await fetch("/api/demo/state", { cache: "no-store" });
-    if (!response.ok) throw new Error("Demo state unavailable");
+    const response = await fetch("/api/state", { cache: "no-store" });
+    if (response.status === 401) { setMode("READ_ONLY"); setNeedLogin(true); return; }
+    if (!response.ok) throw new Error("State unavailable");
     const state = await response.json();
+    setNeedLogin(false);
+    setMode(state.mode);
+    setProvenance(state.provenance);
+    setLanes(state.lanes);
+    setAudit(state.audit ?? []);
+    setSummary(state.summary);
+    setSystemStatus(state.system);
+    if (state.mode === "READ_ONLY" && !state.run) setCaption(state.provenance === "UNKNOWN" ? "Shopifyに読み取り専用で接続します。「朝の報告」で最新の注文を読み取ります。" : "前回読み取ったShopifyのデータを表示しています。「朝の報告」で更新します。");
     setEvents(state.events);
     setApprovals(state.approvals);
     setGeneratedBriefing(state.briefing);
@@ -135,7 +155,7 @@ export default function JarvisApp() {
 
   const startRun = async (input: "text" | "voice") => {
     try {
-      const response = await fetch("/api/demo/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ input }) });
+      const response = await fetch("/api/runs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ input }) });
       if (!response.ok) throw new Error("Demo task could not start");
       const result = await response.json();
       setRun(result.run);
@@ -213,11 +233,16 @@ export default function JarvisApp() {
     el?.focus({ preventScroll: true });
   };
   const closeModal = () => setUiMode("PRESENCE");
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
+    setNeedLogin(true);
+    setEvents([]); setApprovals([]); setRun(null); setGeneratedBriefing(null); setAudit([]);
+  };
   const openDashboard = () => { addEventLog("system.dashboard.opened", "Cross-business overview opened."); setUiMode("DASHBOARD"); };
   const focusDecision = () => reveal(decisionRef.current);
 
   const handleDecision = async (intentId: string, decision: "approved" | "rejected") => {
-    const response = await fetch(`/api/demo/approvals/${encodeURIComponent(intentId)}/decision`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision }) }).catch(() => null);
+    const response = await fetch(`/api/approvals/${encodeURIComponent(intentId)}/decision`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision }) }).catch(() => null);
     if (!response?.ok) {
       setNotice("記録できませんでした（期限切れ・重複・対象の変更）。外部操作はしていません。");
       return;
@@ -267,21 +292,26 @@ export default function JarvisApp() {
   // --- derived presence state ---
   const coreVisualState = toCoreVisualState(coreState);
   const tone = toCoreTone(coreVisualState, run?.status === "succeeded");
-  const sources = toSourceProgress(run);
+  const sources = toSourceProgress(run, lanes);
   const effectiveQuality: GraphicsQuality = quality === "auto" ? (narrow ? "low" : "balanced") : quality;
   const useR3F = effectiveQuality !== "off" && !reducedMotion && !gpuFailed;
   const handleWebGLError = useCallback(() => setGpuFailed(true), []);
   const briefReady = run?.status === "waiting_approval" || run?.status === "succeeded";
   const voiceLabel = `音声 ${voiceState.providerName.includes("Mock") || voiceState.providerName.includes("モック") ? "モック" : voiceState.providerName}${voiceState.isMuted ? " · ミュート" : ""}`;
+  const evidenceItem = approvals.find((a) => a.intent_id === evidenceId) ?? approvals[0];
+  const nextCal = events.find((e) => e.type === "calendar.event.upcoming" && typeof e.data.starts_at === "string");
+  const nextEvent = mode === "DEMO" && nextCal ? jstDateTime(nextCal.data.starts_at as string) : null;
   const markedDates = events.filter((e) => e.type === "calendar.event.upcoming" && typeof e.data.starts_at === "string")
     .map((e) => new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date(e.data.starts_at as string)));
   const toneStyle = { "--st": CORE_TONES[tone].main, "--st2": CORE_TONES[tone].hi } as React.CSSProperties;
 
+  if (needLogin) return <LoginScreen onLoggedIn={() => { void refreshDemo().catch(apiDown); }} />;
+
   return (
     <div className={`deck${reducedMotion ? "" : " motion"}`} style={toneStyle}>
-      <Header now={now} voiceLabel={voiceLabel} markedDates={markedDates} />
+      <Header now={now} voiceLabel={voiceLabel} markedDates={markedDates} mode={mode} provenance={provenance} onLogout={mode === "READ_ONLY" ? logout : undefined} />
 
-      <LeftSidebar now={now} connections={systemStatus.connections} events={events} briefGeneratedAt={briefReady ? generatedBriefing.generated_at : null} logRef={logRef} />
+      <LeftSidebar now={now} connections={systemStatus.connections} log={mode === "DEMO" ? eventLog(events) : auditLog(audit)} nextEvent={nextEvent} briefGeneratedAt={briefReady && generatedBriefing ? generatedBriefing.generated_at : null} logRef={logRef} />
 
       <main className="stage" aria-label="JARVISの状態">
         <div className="core-wrap">
@@ -291,11 +321,11 @@ export default function JarvisApp() {
             <Core2DFallback tone={tone} sources={sources} />
           )}
           <div className="core-tag" aria-hidden="true"><b>{CORE_TAG[tone]}</b><span>{run ? `RUN ${run.taskRunId.slice(0, 8)}` : "NO ACTIVE TASK"}</span></div>
-          {!narrow && <SourceCallouts events={events} progress={sources} layout="orbit" />}
+          {!narrow && <SourceCallouts lanes={lanes} progress={sources} provenance={provenance} layout="orbit" />}
         </div>
 
         <div className={`status tone-${tone}`} aria-live="polite">
-          <span className="s-tag">DEMO · {run ? `デモタスク ${run.taskRunId.slice(0, 8)} · ${RUN_STATUS[run.status]}` : "稼働中タスクなし"}</span>
+          <span className="s-tag">{mode === "DEMO" ? "DEMO" : "READ ONLY"} · {run ? `タスク ${run.taskRunId.slice(0, 8)} · ${RUN_STATUS[run.status]}` : "稼働中タスクなし"}</span>
           <strong>{notice && tone !== "review" ? "確認してください" : TONE_TITLE[tone]}</strong>
           <p>{notice ?? caption}</p>
           {voiceState.currentSubtitle && <p className="subtitle"><span>字幕</span>{voiceState.currentSubtitle}</p>}
@@ -306,7 +336,7 @@ export default function JarvisApp() {
           ))}
           {!LEGEND_TONES.includes(tone) && <span className="on" style={{ "--c": CORE_TONES[tone].main } as React.CSSProperties}><i aria-hidden="true" />{CORE_TONES[tone].label}</span>}
         </div>
-        {narrow && <SourceCallouts events={events} progress={sources} layout="list" />}
+        {narrow && <SourceCallouts lanes={lanes} progress={sources} provenance={provenance} layout="list" />}
         <CommandBar onCommandSubmit={handleCommand} />
 
         {drawer === "voice" && (
@@ -329,7 +359,8 @@ export default function JarvisApp() {
       </main>
 
       <RightSidebar
-        approval={approvals[0]}
+        mode={mode}
+        approvals={approvals}
         order={events.find((e) => e.event_id === "demo_001")}
         briefing={generatedBriefing}
         briefReady={briefReady}
@@ -339,19 +370,19 @@ export default function JarvisApp() {
         decisionRef={decisionRef}
         onApprove={(id) => handleDecision(id, "approved")}
         onReject={(id) => handleDecision(id, "rejected")}
-        onOpenEvidence={() => setUiMode("APPROVAL_CENTER")}
+        onOpenEvidence={(id) => { setEvidenceId(id); setUiMode("APPROVAL_CENTER"); }}
         onOpenBriefing={() => setUiMode("BRIEFING")}
         onOpenNumbers={openDashboard}
       />
 
       <Dock pendingApprovals={pendingApprovalsCount} open={drawer} onAction={onDock} />
 
-      {uiMode === "BRIEFING" && (
+      {uiMode === "BRIEFING" && generatedBriefing && (
         <BriefingModal briefing={generatedBriefing} run={run} onClose={closeModal} onGoToApprovals={focusDecision} onSpeak={handleSpeakTTS} />
       )}
-      {uiMode === "DASHBOARD" && <DashboardModal summary={summary} onClose={closeModal} />}
-      {uiMode === "APPROVAL_CENTER" && approvals.length > 0 && (
-        <ApprovalModal item={approvals[0]} onClose={closeModal} onApprove={(id) => handleDecision(id, "approved")} onReject={(id) => handleDecision(id, "rejected")} />
+      {uiMode === "DASHBOARD" && <DashboardModal summary={summary} mode={mode} onClose={closeModal} />}
+      {uiMode === "APPROVAL_CENTER" && evidenceItem && (
+        <ApprovalModal item={evidenceItem} onClose={closeModal} onApprove={(id) => handleDecision(id, "approved")} onReject={(id) => handleDecision(id, "rejected")} />
       )}
     </div>
   );

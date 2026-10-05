@@ -43,13 +43,16 @@ export type TaskRun = {
   taskRunId: string;
   status: "running" | "waiting_approval" | "succeeded" | "failed";
   operationalState: CoreVisualState;
-  mode: "DEMO";
+  mode: "DEMO" | "READ_ONLY";
   sourceRefs: string[];
   reason: string;
   startedAt: string;
   approvalId: string;
   jobs: Array<{ sourceId: string; reason: string; status: "succeeded" | "failed" }>;
 };
+
+/** One data source shown as an arc around the core. `ids` are the job sourceIds that belong to it. */
+export type SourceLane = { source: string; label: string; ids: string[]; detail: string; connected: boolean };
 
 export function toCoreVisualState(state: CoreState): CoreVisualState {
   return state.toLowerCase() as CoreVisualState;

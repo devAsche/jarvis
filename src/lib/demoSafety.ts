@@ -15,14 +15,15 @@ export function decideDemoApproval(
   intentId: string,
   decision: "approved" | "rejected",
   now = new Date(),
+  policy: { actionPrefix: "demo." | "review."; reviewer: string } = { actionPrefix: "demo.", reviewer: "local-demo-ui" },
 ): ApprovalItem | null {
   if (!ApprovalItemSchema.safeParse(current).success || !ApprovalItemSchema.safeParse(original).success) return null;
   if (decision !== "approved" && decision !== "rejected") return null;
   if (current.intent_id !== intentId || original.intent_id !== intentId || current.status !== "pending" || original.status !== "pending") return null;
   if (current.reviewed_at || current.reviewed_by || current.execution_ref) return null;
-  if (!original.action_type.startsWith("demo.") || !Number.isFinite(now.getTime()) || Date.parse(current.expires_at) <= now.getTime()) return null;
+  if (!original.action_type.startsWith(policy.actionPrefix) || !Number.isFinite(now.getTime()) || Date.parse(current.expires_at) <= now.getTime()) return null;
   for (const field of ["action_type", "account", "target_id", "title", "description", "amount_cap_minor", "currency", "expires_at", "reason", "risk"] as const) {
     if (current[field] !== original[field]) return null;
   }
-  return { ...current, status: decision, reviewed_by: "local-demo-ui", reviewed_at: now.toISOString() };
+  return { ...current, status: decision, reviewed_by: policy.reviewer, reviewed_at: now.toISOString() };
 }

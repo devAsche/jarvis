@@ -141,3 +141,7 @@ GitHubアクセス復旧を確認し`claude/lucid-ramanujan-j3sem3`をpush。ユ
 ## 2026-10-05 / Claude Code（クラウド）/ 案D 蒼の本番実装
 
 ユーザーの実装指示を受け`DESIGN_SELECTION.md`を選択済みに更新。担当範囲は`src/app`と`src/components`のUIのみ。page.tsxのrun・承認・音声の結線は維持し、表示を案D（日付ルーラー、左ゲージ、中央R3Fコア＋出典注記、右の判断/報告/数字、円形ドック）に置換。コアは状態色（蒼/紫/琥珀/翠/紅）で、run.jobsから3系統の出典弧を描く。typecheck/lint/24テスト/build合格。swiftshaderの実ブラウザーで8状態を撮影。ADR 0005追加。実GPU計測と独立レビューは未実施。
+
+## 2026-10-05 / Claude Code（クラウド）/ M2 Shopify読み取り専用の実装
+
+ユーザーに最初の連携・有料API・稼働場所を確認（Shopify / 0円 / クラウド）。shopify.devの検索で Admin API 2026-10、Dev Dashboard＋client credentials grant（管理画面カスタムアプリは新規作成不可）、Webhook HMAC検証と配信ID重複排除を確認。オーナー認証、ファイル保存、読み取り同期（タイムアウト・再試行）、Webhook、cron、決定的ルール、鮮度表示、統一API、ログイン画面を実装。途中で見つけた2件（Shopify無応答で読み取り中のまま止まる、.envの$展開でハッシュが壊れる）を修正しテスト追加。typecheck/lint/36テスト/build合格。実ストア接続とクラウドは未実施。

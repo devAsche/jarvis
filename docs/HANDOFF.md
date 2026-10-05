@@ -89,6 +89,14 @@
 - 残件: 実GPUのFPS未測定、照合中（紫）とエラー（紅）は実画面で未撮影、Windows実機フォント未確認。`next/font`はビルド時にGoogle Fontsへ接続する。
 - 次の1手: ユーザーが実画面を確認。別セッションで`PROMPT_02_REVIEW.md`の独立レビュー。
 
+## 2026-10-05 / Claude Code（クラウド）/ M2 Shopify読み取り専用
+
+- ユーザー決定: 最初の連携=Shopify、有料API=0円、稼働=クラウド常時稼働（デプロイは見積もり承認後）。ADR 0006。
+- 追加: `src/server/`（config、auth、store、money、sync、rules、live、runtime、providers/shopify、demoLanes）、統一API（state/runs/approvals/auth/webhooks/cron）、`LoginScreen`、`scripts/hash-password.mjs`、`.env.example`、`docs/12_CLOUD_PLAN.md`、`docs/13_SHOPIFY_SETUP.md`、テスト2ファイル。画面は統一APIへ切替、確認カードは複数件・通貨対応。
+- 検証: typecheck・lint・`npm test` 36/36・build。ブラウザーでDEMOの全流れと、READ_ONLY（仮データ）のログイン失敗/成功→朝の報告→同期失敗でSTALE表示→確認カード2件→記録→ログアウトを確認。証跡 `docs/design/ui-rebuild-2026-10-05/implementation/live_*.png`。
+- 未確認: 実ストアでの接続（この環境からShopifyへの通信不可）、Webhookの実配信、クラウド環境。
+- 次の1手: ユーザーがDev Dashboardでアプリを作り `.env.local` を設定して接続確認。並行してクラウド候補の承認。
+
 ## 作業引継ぎチェック
 
 - [x] git status確認

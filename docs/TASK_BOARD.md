@@ -20,6 +20,8 @@
 | UI-REBUILD-CLOUD | DONE | Codex | 公開`devAsche/jarvis`の`handoff/claude-ui-rebuild-2026-10-05`へ現行デモと資料をpushし、GitHub上で引継ぎREADMEを確認。typecheck/lint/22テスト合格 |
 | UI-REBUILD-DESIGN | DONE | Claude Code + Human | 監査と3案（A 朝の机 / B 管制盤 / C 対話）の試作・キャプチャを`docs/design/ui-rebuild-2026-10-05/`に保存。ユーザーの選択待ち。本番ルート未変更 |
 | UI-REBUILD-IMPLEMENT | VERIFY | Claude Code | 案D蒼＋状態色を本番ルートへ実装。typecheck/lint/24テスト/build合格、実ブラウザーで8状態撮影。実GPU計測と独立レビュー（PROMPT_02）が残件 |
-| M2-01 | BLOCKED | Human decision | 外部1サービスの読取専用連携を指定・認証 |
+| M2-01 | VERIFY | Claude Code + Human | Shopify読み取り専用（オーナー認証・ファイル保存・同期・Webhook・ルール・鮮度表示）を実装。偽Shopifyでテスト36件合格。実ストア接続はユーザーのDev Dashboardアプリ作成待ち（docs/13） |
+| M2-02 | BLOCKED | Human decision | クラウド常時稼働: 候補・月額上限・URL・バックアップの承認待ち（docs/12） |
+| M3-01 | TODO | Claude Code | MIX返信下書き（テンプレート）、効果アダプターと緊急停止の設計。外部送信は承認制 |
 
 状態: TODO/READY/IN_PROGRESS/BLOCKED/VERIFY/DONE。作業前に担当ブランチ/対象ファイルを`HANDOFF.md`へ記録。

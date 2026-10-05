@@ -17,3 +17,6 @@ Thumbs.db
 references/monitor_crop.jpg
 # local screenshots may contain real customer information in future
 screenshots/private/
+
+# durable local store (real business data in READ_ONLY mode)
+.data/

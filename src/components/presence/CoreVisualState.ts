@@ -1,4 +1,4 @@
-import type { CoreVisualState, TaskRun } from "../../contracts";
+import type { CoreVisualState, SourceLane, TaskRun } from "../../contracts";
 
 /**
  * Visual tone of the central core. Derived only from real demo state:
@@ -43,15 +43,13 @@ export function toCoreTone(state: CoreVisualState, recorded: boolean): CoreTone 
   }
 }
 
-const SOURCE_IDS = [["demo_001"], ["demo_002", "demo_004"], ["demo_005"]];
-
-/** Progress of the three fixture lanes (shopify / gmail / calendar), taken from the run's jobs. */
-export function toSourceProgress(run: TaskRun | null): SourceProgress[] {
-  return SOURCE_IDS.map((ids) => {
-    if (!run) return "pending";
-    const jobs = run.jobs.filter((job) => ids.includes(job.sourceId));
+/** Progress of each source lane, taken only from the run's real jobs. Unconnected lanes never progress. */
+export function toSourceProgress(run: TaskRun | null, lanes: SourceLane[]): SourceProgress[] {
+  return lanes.map((lane) => {
+    if (!run || !lane.connected || lane.ids.length === 0) return "pending";
+    const jobs = run.jobs.filter((job) => lane.ids.includes(job.sourceId));
     if (jobs.some((job) => job.status === "failed")) return "failed";
-    if (jobs.length === ids.length) return "done";
+    if (jobs.length === lane.ids.length) return "done";
     if (run.status === "failed") return "failed";
     return run.status === "running" ? "running" : "pending";
   });

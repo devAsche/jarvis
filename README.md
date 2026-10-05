@@ -46,6 +46,10 @@ git worktree add C:\AI\jarvis-codex -b feat/backend-foundation
 
 初日は同時稼働させず、AntigravityでM1の画面・API契約を完成 → Codexに別ブランチで検証と基盤開発を任せる順序が安全。
 
+### 実データ（Shopify読み取り専用）で使う
+
+`docs/13_SHOPIFY_SETUP.md` の手順で `.env.local` を作り、`JARVIS_MODE=READ_ONLY` にして `npm run build && npm run start`。ブラウザーでオーナーのパスワードでログインし「朝の報告」を押す。何も設定しなければ従来どおりDEMOで起動する。
+
 ### ローカル起動・検証コマンド (M0/M1)
 
 ```powershell

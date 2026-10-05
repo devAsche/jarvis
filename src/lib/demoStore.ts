@@ -116,6 +116,6 @@ export function recordDemoDecision(intentId: string, decision: "approved" | "rej
 export function demoWriteAllowed(request: Request): boolean {
   const origin = request.headers.get("origin");
   const host = request.headers.get("host") ?? new URL(request.url).host;
-  try { return process.env.NODE_ENV !== "production" && !!origin && new URL(origin).host === host; }
+  try { return process.env.NODE_ENV !== "production" && process.env.JARVIS_MODE !== "READ_ONLY" && !!origin && new URL(origin).host === host; }
   catch { return false; }
 }

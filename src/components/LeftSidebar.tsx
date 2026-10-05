@@ -1,15 +1,16 @@
 "use client";
 
 import React from "react";
-import type { ConnectionInfo, SourceEventEnvelope } from "../contracts";
+import type { ConnectionInfo } from "../contracts";
 import { HudPanel } from "./HudPanel";
 import type { JstNow } from "./useJstNow";
-import { eventTitle, jstDateTime, jstTime } from "./demoText";
+import { jstTime, type LogItem } from "./demoText";
 
 interface LeftSidebarProps {
   now: JstNow | null;
   connections: ConnectionInfo[];
-  events: SourceEventEnvelope[];
+  log: LogItem[];
+  nextEvent: string | null;
   briefGeneratedAt: string | null;
   logRef?: React.Ref<HTMLElement>;
 }
@@ -34,9 +35,7 @@ function DateDial({ now }: { now: JstNow | null }) {
   );
 }
 
-export function LeftSidebar({ now, connections, events, briefGeneratedAt, logRef }: LeftSidebarProps) {
-  const next = events.find((e) => e.type === "calendar.event.upcoming");
-  const nextAt = typeof next?.data.starts_at === "string" ? jstDateTime(next.data.starts_at) : "なし";
+export function LeftSidebar({ now, connections, log, nextEvent, briefGeneratedAt, logRef }: LeftSidebarProps) {
   const linked = connections.filter((c) => c.connected).length;
   return (
     <aside className="hud-col hud-left" aria-label="日付・接続・記録">
@@ -45,7 +44,7 @@ export function LeftSidebar({ now, connections, events, briefGeneratedAt, logRef
           <DateDial now={now} />
           <dl>
             <dt>朝の報告</dt><dd>{briefGeneratedAt ? <>{jstTime(briefGeneratedAt)}<small>作成</small></> : <>--:--<small>未作成</small></>}</dd>
-            <dt>次の予定（例）</dt><dd>{nextAt}</dd>
+            <dt>次の予定{nextEvent ? "（例）" : ""}</dt><dd>{nextEvent ?? <>--<small>予定表は未接続</small></>}</dd>
           </dl>
         </div>
       </HudPanel>
@@ -55,17 +54,18 @@ export function LeftSidebar({ now, connections, events, briefGeneratedAt, logRef
             <div key={c.id} className={c.connected ? "on" : ""}>
               <svg viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="22" fill="none" stroke="var(--line)" strokeWidth="2" strokeDasharray={c.connected ? undefined : "3 4"} /><circle cx="27" cy="27" r="14" fill="none" stroke={c.connected ? "var(--glow)" : "var(--line-soft)"} strokeWidth="6" /><text x="27" y="31" textAnchor="middle">{c.icon}</text></svg>
               <div className="nm">{SERVICE_NAME[c.id] ?? c.name}</div>
-              <div className="st">{c.connected ? "接続中" : "未接続"}</div>
+              <div className="st">{c.statusText === "NOT CONNECTED" ? "未接続" : c.statusText}</div>
             </div>
           ))}
         </div>
       </HudPanel>
-      <HudPanel title="記録" code="DEMO · 監査" panelRef={logRef} tabIndex={-1}>
+      <HudPanel title="記録" code="監査ログ" panelRef={logRef} tabIndex={-1}>
         <ul className="log" aria-live="polite">
-          {events.slice(0, 6).map((evt) => (
-            <li key={`${evt.source}:${evt.event_id}`}>
-              <time dateTime={evt.occurred_at}>{jstTime(evt.occurred_at)}</time>
-              <div>{eventTitle(evt)}<span className="src">{evt.event_id.length > 12 ? evt.correlation_id.slice(0, 8) : evt.event_id} · {evt.source}</span></div>
+          {log.length === 0 && <li><time>--:--</time><div>まだ記録はありません</div></li>}
+          {log.slice(0, 6).map((item) => (
+            <li key={item.key}>
+              <time dateTime={item.at}>{jstTime(item.at)}</time>
+              <div>{item.title}<span className="src">{item.sub}</span></div>
             </li>
           ))}
         </ul>

@@ -21,6 +21,7 @@ export function BriefingModal({
   onSpeak,
 }: BriefingModalProps) {
   const dialogRef = useDialogFocus(onClose);
+  const live = briefing.data_mode === "READ_ONLY";
 
   return (
     <div
@@ -35,7 +36,7 @@ export function BriefingModal({
     >
       <div className="modal-window">
         <div className="modal-header">
-          <h2 id="briefing-modal-title">朝の報告 · サンプル</h2>
+          <h2 id="briefing-modal-title">朝の報告 · {live ? "READ ONLY" : "サンプル"}</h2>
           <button
             className="modal-close-btn"
             onClick={onClose}
@@ -45,12 +46,12 @@ export function BriefingModal({
           </button>
         </div>
 
-        <span className="pill-tag">DEMO · 実サービス未接続</span>
+        <span className="pill-tag">{live ? "Shopify読み取り · 書き込みなし" : "DEMO · 実サービス未接続"}</span>
         <div className="tiny-label">{run?.taskRunId ? `デモタスク ${run.taskRunId.slice(0, 8)}` : "稼働中タスクなし"}</div>
         {run?.status === "running" && <p className="narrative-block">サンプルの出典を照合中です。完了後に根拠ID付きの報告を表示します。</p>}
         {run?.status !== "running" && <>
 
-        <div className="card-grid-2">
+        {!live && <div className="card-grid-2">
           <div className="stat-card">
             <small>サンプルの配送費確認</small>
             <strong>01</strong>
@@ -61,12 +62,12 @@ export function BriefingModal({
             <strong>02</strong>
             <small>メールは送信していません</small>
           </div>
-        </div>
+        </div>}
 
         <div className="narrative-block">
           <p>
             <b>おはようございます。</b>
-            これはサンプルデータから作成した朝の報告です。実際の店舗・メール・予定表には接続されていません。
+            {live ? "Shopifyの読み取り専用データから、決まったルールで作成した報告です。メールと予定表は未接続です。" : "これはサンプルデータから作成した朝の報告です。実際の店舗・メール・予定表には接続されていません。"}
           </p>
           <ol>
             {briefing.sections.map((sec) => (
@@ -95,7 +96,7 @@ export function BriefingModal({
         </div>
 
         <div className="tiny-label" style={{ marginTop: "16px" }}>
-          出典: ローカルfixture · DEMO · 生成時刻: {jstDateTime(briefing.generated_at)} JST
+          出典: {live ? "Shopify（読み取り専用）" : "ローカルfixture · DEMO"} · 生成時刻: {jstDateTime(briefing.generated_at)} JST
         </div>
         </>}
         <p className="modal-foot">

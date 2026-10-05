@@ -226,6 +226,21 @@ button { cursor: pointer; }
 }
 @keyframes hud-spin { to { transform: rotate(360deg); } }
 
+/* live mode, review queue, login */
+.hud-demo.live { color: var(--glow-hi); border-color: var(--glow); background: rgba(86, 200, 255, 0.12); }
+.hud-demo.live.stale { color: var(--gold); border-color: var(--gold); background: rgba(232, 191, 106, 0.14); }
+.hud-demo.live.unknown { color: var(--sub); border-color: var(--line); background: transparent; }
+.co.off { opacity: 0.55; }
+.dec-desc { font-size: 15px; margin: 4px 0 12px; }
+.queue { list-style: none; margin-top: 12px; display: grid; gap: 2px; border-top: 1px solid var(--line-soft); padding-top: 8px; }
+.queue .link-btn { margin: 0; text-align: left; }
+.login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse 60% 60% at 50% 40%, var(--deep), var(--void) 75%); }
+.login { width: min(420px, 100%); }
+.login-form { display: grid; gap: 10px; margin-top: 14px; }
+.login-form input { background: var(--deep); border: 1px solid var(--line); padding: 10px 12px; font-size: 16px; color: var(--ink); }
+.login-form input:focus { outline: 2px solid var(--glow); }
+.login-error { margin-top: 10px; color: var(--alert); font-weight: 700; }
+
 /* ---------------- modals (existing dialogs, restyled) ---------------- */
 .modal-overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(1, 6, 12, 0.78); backdrop-filter: blur(6px); }
 .modal-window { --c: 18px; position: relative; isolation: isolate; width: min(720px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 26px 28px; }

@@ -51,6 +51,19 @@ M0実装済み: `GET /api/demo/state` はfixtureとプロセス内デモ状態�
 
 本番時は認証/認可、CSRF/Origin、rate limit、ページング、データマスキング、ロールバックを設計。デモイベント投入APIは本番無効。UI用push更新はSSEまたはWebSocketを測定して採用。
 
+## 実装済みAPI（2026-10-05, ADR 0006）
+
+| METHOD | PATH | 内容 |
+| --- | --- | --- |
+| GET | `/api/state` | DEMO: fixture状態。READ_ONLY: オーナーのみ（未ログインは401）。events/approvals/run/briefing/summary/system/lanes/provenance/sync/audit |
+| POST | `/api/runs` | DEMO: fixture照合。READ_ONLY: Shopify読み取り同期→ルールで報告と確認カード（オーナー＋同一Origin） |
+| POST | `/api/approvals/:id/decision` | 固定項目・期限・重複を照合して記録のみ（effect=none） |
+| POST | `/api/auth/login`, `/api/auth/logout` | オーナー認証（5回失敗で15分停止） |
+| POST | `/api/webhooks/shopify` | HMAC検証・ショップ一致・配信ID重複排除。READ_ONLYのみ |
+| POST | `/api/cron/sync` | `Authorization: Bearer JARVIS_CRON_SECRET`。READ_ONLYのみ |
+
+保存は`JARVIS_DATA_DIR/jarvis-store.json`（`src/server/store.ts`）。上の「コアテーブル」のうち orders/source_events/approvals/audit/sync状態を1ファイルで実装し、DB化はクラウド移行時に再検討。
+
 ## 朝のbriefの回答構造案
 
 ```json
