@@ -1,105 +1,58 @@
-import { CoreVisualState } from "../../contracts";
+import type { CoreVisualState, TaskRun } from "../../contracts";
 
-export interface CoreVisualConfig {
-  primaryColor: string;
-  glowColor: string;
-  rotationSpeed: number;
-  pulseSpeed: number;
-  particleSpeed: number;
-  particleCount: number;
+/**
+ * Visual tone of the central core. Derived only from real demo state:
+ * `CoreVisualState` (task/voice events) plus whether the current run was recorded.
+ */
+export type CoreTone = "standby" | "listening" | "working" | "speaking" | "review" | "recorded" | "error" | "offline";
+export type SourceProgress = "pending" | "running" | "done" | "failed";
+
+export interface CoreToneConfig {
+  main: string;
+  hi: string;
   label: string;
-  subLabel: string;
+  /** Rotation multiplier; 0 means still. */
+  speed: number;
 }
 
-export const STATE_VISUAL_CONFIGS: Record<CoreVisualState, CoreVisualConfig> = {
-  idle: {
-    primaryColor: "#52D8FF",
-    glowColor: "#5174FF",
-    rotationSpeed: 0.3,
-    pulseSpeed: 1.0,
-    particleSpeed: 0.2,
-    particleCount: 120,
-    label: "SYSTEM STANDBY",
-    subLabel: "待機中 · 最小GPU負荷 · 安全側停止",
-  },
-  listening: {
-    primaryColor: "#52D8FF",
-    glowColor: "#81FFE1",
-    rotationSpeed: 0.6,
-    pulseSpeed: 2.5,
-    particleSpeed: 0.8,
-    particleCount: 150,
-    label: "VOICE LISTENING",
-    subLabel: "音声入力検知中（シミュレーション） · 音声OFF可能",
-  },
-  delegating: {
-    primaryColor: "#7E82FF",
-    glowColor: "#5174FF",
-    rotationSpeed: 1.2,
-    pulseSpeed: 3.0,
-    particleSpeed: 1.0,
-    particleCount: 160,
-    label: "CLIENT DELEGATING",
-    subLabel: "JARVIS CORE連携中 · 外部オーケストレーション",
-  },
-  thinking: {
-    primaryColor: "#7E82FF",
-    glowColor: "#52D8FF",
-    rotationSpeed: 1.0,
-    pulseSpeed: 2.0,
-    particleSpeed: 0.7,
-    particleCount: 140,
-    label: "AGENT PROCESSING",
-    subLabel: "決定論的ポリシー評価中 · 偽の推論表示なし",
-  },
-  speaking: {
-    primaryColor: "#81FFE1",
-    glowColor: "#52D8FF",
-    rotationSpeed: 0.8,
-    pulseSpeed: 2.2,
-    particleSpeed: 0.6,
-    particleCount: 130,
-    label: "AUDIO OUT / TTS",
-    subLabel: "音声合成出力中 · 全文は字幕DOMにて閲覧可能",
-  },
-  executing: {
-    primaryColor: "#52D8FF",
-    glowColor: "#5174FF",
-    rotationSpeed: 1.5,
-    pulseSpeed: 2.8,
-    particleSpeed: 1.2,
-    particleCount: 180,
-    label: "TASK EXECUTING",
-    subLabel: "ジョブ実行中（モック） · 完了の推測表示なし",
-  },
-  awaiting_approval: {
-    primaryColor: "#FFBE76",
-    glowColor: "#FF8C00",
-    rotationSpeed: 0.4,
-    pulseSpeed: 1.5,
-    particleSpeed: 0.3,
-    particleCount: 110,
-    label: "AWAITING HUMAN APPROVAL",
-    subLabel: "人間の個別確認待ち · 音声単独での承認不可",
-  },
-  error: {
-    primaryColor: "#FF5555",
-    glowColor: "#AA2222",
-    rotationSpeed: 0.2,
-    pulseSpeed: 0.8,
-    particleSpeed: 0.1,
-    particleCount: 80,
-    label: "SYSTEM ERROR",
-    subLabel: "安全側に停止中 · 診断ログをUIに表示",
-  },
-  offline: {
-    primaryColor: "#5A6D8C",
-    glowColor: "#2A364F",
-    rotationSpeed: 0.05,
-    pulseSpeed: 0.2,
-    particleSpeed: 0.05,
-    particleCount: 40,
-    label: "OFFLINE / DISCONNECTED",
-    subLabel: "全通信遮断 · ローカルキャッシュのみ参照可能",
-  },
+export const CORE_TONES: Record<CoreTone, CoreToneConfig> = {
+  standby: { main: "#56c8ff", hi: "#b8ecff", label: "待機", speed: 0.35 },
+  listening: { main: "#5fe3ff", hi: "#d2f8ff", label: "音声入力（模擬）", speed: 0.8 },
+  working: { main: "#a07bff", hi: "#5fe3ff", label: "照合中", speed: 1.6 },
+  speaking: { main: "#7fe7ff", hi: "#e2fbff", label: "読み上げ", speed: 0.7 },
+  review: { main: "#ffb347", hi: "#ffe1a8", label: "承認待ち", speed: 0.7 },
+  recorded: { main: "#3cf0a4", hi: "#c4ffe6", label: "記録済み", speed: 0.3 },
+  error: { main: "#ff4d63", hi: "#ffb0ba", label: "エラー", speed: 0.2 },
+  offline: { main: "#6c7f99", hi: "#b6c3d4", label: "切断", speed: 0.05 },
 };
+
+/** Tones shown in the on-screen legend, in workflow order. */
+export const LEGEND_TONES: CoreTone[] = ["standby", "working", "review", "recorded", "error"];
+
+export function toCoreTone(state: CoreVisualState, recorded: boolean): CoreTone {
+  switch (state) {
+    case "listening": return "listening";
+    case "delegating":
+    case "thinking":
+    case "executing": return "working";
+    case "speaking": return "speaking";
+    case "awaiting_approval": return "review";
+    case "error": return "error";
+    case "offline": return "offline";
+    default: return recorded ? "recorded" : "standby";
+  }
+}
+
+const SOURCE_IDS = [["demo_001"], ["demo_002", "demo_004"], ["demo_005"]];
+
+/** Progress of the three fixture lanes (shopify / gmail / calendar), taken from the run's jobs. */
+export function toSourceProgress(run: TaskRun | null): SourceProgress[] {
+  return SOURCE_IDS.map((ids) => {
+    if (!run) return "pending";
+    const jobs = run.jobs.filter((job) => ids.includes(job.sourceId));
+    if (jobs.some((job) => job.status === "failed")) return "failed";
+    if (jobs.length === ids.length) return "done";
+    if (run.status === "failed") return "failed";
+    return run.status === "running" ? "running" : "pending";
+  });
+}

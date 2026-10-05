@@ -38,7 +38,7 @@ export function DashboardModal({ summary, onClose }: DashboardModalProps) {
 
         <div style={{ display: "flex", gap: "8px", marginBottom: "16px", alignItems: "center" }}>
           <span className="pill-tag">実サービス未接続</span>
-          <span className="pill-tag" style={{ borderColor: "#64b6e5", color: "#b3e5fc" }}>
+          <span className="pill-tag">
             サンプル表示
           </span>
         </div>
@@ -102,13 +102,13 @@ export function DashboardModal({ summary, onClose }: DashboardModalProps) {
           <p>
             これらの数値はサンプルです。最終同期はなく、純利益を計算するための原価データもありません。
           </p>
-          <ul style={{ fontSize: "12px", color: "#a5c2d7" }}>
+          <ul>
             <li>注文・メール・予定表はすべて未接続です。</li>
             <li>模擬承認は外部サービスへの実行権限を持ちません。</li>
           </ul>
         </div>
 
-        <p style={{ marginTop: "14px", fontSize: "11px", color: "#7b9bb1" }}>
+        <p className="modal-foot">
           DEMO · 実サービスへの書込みなし
         </p>
       </div>

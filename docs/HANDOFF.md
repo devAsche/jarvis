@@ -81,6 +81,14 @@
 - 3案の試作`prototypes/concepts.html`とキャプチャを保存。比較は同フォルダーの`README.md`。参考サイト調査は未実施。
 - 次の1手: ユーザーが案（または組合せ）を選び、`DESIGN_SELECTION.md`に記録してから`PROMPT_01_IMPLEMENT.md`へ。
 
+## 2026-10-05 / Claude Code（クラウド）/ UI再制作の実装（案D 蒼）
+
+- 選択: 案D SF HUD「蒼」＋コアの状態色（`DESIGN_SELECTION.md`、ADR 0005）。
+- 変更: `src/app/{page.tsx,globals.css,layout.tsx}`、`src/components/`（Header、LeftSidebar、RightSidebar、CommandBar、VoiceControls、各モーダルの文言/クラス、presence一式）。新規: `Dock`、`HudPanel`、`SourceCallouts`、`DisplaySettings`、`demoText`、`useJstNow`、`tests/core-tone.test.mjs`。削除: `ObservatoryField`、未使用の`CentralCore`。API・store・safety・契約・fixture・音声は未変更。
+- 検証: typecheck合格、lint 0、`npm test` 24/24、build合格。実ブラウザー（swiftshader）で待機/承認待ち/承認後/未対応指示/根拠モーダル/GPU失敗/reduced motion/描画オフ、1440と390で撮影し横はみ出しなし。重複承認409。証跡`docs/design/ui-rebuild-2026-10-05/implementation/`。
+- 残件: 実GPUのFPS未測定、照合中（紫）とエラー（紅）は実画面で未撮影、Windows実機フォント未確認。`next/font`はビルド時にGoogle Fontsへ接続する。
+- 次の1手: ユーザーが実画面を確認。別セッションで`PROMPT_02_REVIEW.md`の独立レビュー。
+
 ## 作業引継ぎチェック
 
 - [x] git status確認

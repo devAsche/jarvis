@@ -91,14 +91,14 @@ export function ApprovalModal({
           <p>
             <b>このデモの安全条件:</b>
           </p>
-          <ul style={{ fontSize: "12px", color: "#a5c2d7" }}>
+          <ul>
             <li>音声入力の「はい」のみでは高リスク操作（発注/出金/広告変更）を実行しません。</li>
             <li>このdemoでは対象ID、固定項目、有効期限、金額をサーバー側で照合します。</li>
             <li>同じ承認の再送や内容差替えは拒否されます。実行権限はありません。</li>
           </ul>
         </div>
 
-        <p style={{ marginTop: "14px", fontSize: "11px", color: "#7b9bb1" }}>
+        <p className="modal-foot">
           ローカルのサンプルのみ · 実サービスへの書込みなし
         </p>
       </div>

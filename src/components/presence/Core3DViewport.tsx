@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { CoreEffectMode, CoreVisualState, GraphicsQuality } from "../../contracts";
+import type { GraphicsQuality } from "../../contracts";
+import type { CoreTone, SourceProgress } from "./CoreVisualState";
 import { CoreScene } from "./CoreScene";
 import { Core2DFallback } from "./Core2DFallback";
-import { ObservatoryField } from "./ObservatoryField";
 
 interface Core3DViewportProps {
-  operationalState: CoreVisualState;
-  mode: CoreEffectMode;
+  tone: CoreTone;
+  sources: SourceProgress[];
   quality: GraphicsQuality;
   audioLevel?: number;
   reducedMotion?: boolean;
@@ -25,8 +25,8 @@ class CanvasErrorBoundary extends React.Component<{ onError: () => void; childre
 }
 
 export function Core3DViewport({
-  operationalState,
-  mode,
+  tone,
+  sources,
   quality,
   audioLevel = 0,
   reducedMotion = false,
@@ -72,22 +72,22 @@ export function Core3DViewport({
 
   // If WebGL is unavailable or user requested reduced motion or render error occurred -> Fallback
   if (hasWebGL === false || renderError || reducedMotion) {
-    return <Core2DFallback state={operationalState} reducedMotion={reducedMotion} />;
+    return <Core2DFallback tone={tone} sources={sources} />;
   }
 
   // Initial SSR / hydration placeholder
   if (hasWebGL === null) {
-    return <Core2DFallback state={operationalState} reducedMotion={true} />;
+    return <Core2DFallback tone={tone} sources={sources} />;
   }
 
   return (
     <div
-      className={`core-wrap r3f-viewport-container${visible ? "" : " core-paused"}`}
-      aria-label="3D Core Visual Interface"
+      className={`core-canvas${visible ? "" : " core-paused"}`}
+      aria-hidden="true"
     >
       <CanvasErrorBoundary onError={() => { setRenderError(true); onWebGLError?.(new Error("Canvas render failed")); }}>
       <Canvas
-        camera={{ position: [0, 0, 5], fov: 45 }}
+        camera={{ position: [0, 0, 5.2], fov: 45 }}
         dpr={quality === "low" ? 1 : [1, 1.5]}
         frameloop={visible ? "always" : "demand"}
         gl={{
@@ -97,10 +97,9 @@ export function Core3DViewport({
         }}
         onCreated={({ gl }) => { setCanvasElement(gl.domElement); }}
       >
-        <CoreScene operationalState={operationalState} mode={mode} quality={quality} audioLevel={audioLevel} reducedMotion={reducedMotion} />
+        <CoreScene tone={tone} sources={sources} quality={quality} audioLevel={audioLevel} reducedMotion={reducedMotion} />
       </Canvas>
       </CanvasErrorBoundary>
-      <ObservatoryField state={operationalState} />
     </div>
   );
 }

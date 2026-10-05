@@ -18,8 +18,8 @@
 | CR003-IMPLEMENT | VERIFY | Codex | 青い観測コアの回転と左右カードの微小な浮遊を復帰。typecheck/lint/22テスト/build、実ブラウザーで動き/手動抑制を確認。FPS/コントラスト/全幅QAと英語copy残件は`CR003/report/IMPLEMENTATION_LOG.md`参照。 |
 | UI-REBUILD-HANDOFF | DONE | Codex | Claude Code向けブリーフ・契約/受入条件・監査/実装/レビューのプロンプトを`docs/handoffs/claude-ui-rebuild-2026-10-05/`へ保存。アプリ実装は未変更 |
 | UI-REBUILD-CLOUD | DONE | Codex | 公開`devAsche/jarvis`の`handoff/claude-ui-rebuild-2026-10-05`へ現行デモと資料をpushし、GitHub上で引継ぎREADMEを確認。typecheck/lint/22テスト合格 |
-| UI-REBUILD-DESIGN | VERIFY | Claude Code + Human | 監査と3案（A 朝の机 / B 管制盤 / C 対話）の試作・キャプチャを`docs/design/ui-rebuild-2026-10-05/`に保存。ユーザーの選択待ち。本番ルート未変更 |
-| UI-REBUILD-IMPLEMENT | BLOCKED | Claude Code | `DESIGN_SELECTION.md`へ今回の選択が記録された後、既存アプリ内へ選択案を実装・試験 |
+| UI-REBUILD-DESIGN | DONE | Claude Code + Human | 監査と3案（A 朝の机 / B 管制盤 / C 対話）の試作・キャプチャを`docs/design/ui-rebuild-2026-10-05/`に保存。ユーザーの選択待ち。本番ルート未変更 |
+| UI-REBUILD-IMPLEMENT | VERIFY | Claude Code | 案D蒼＋状態色を本番ルートへ実装。typecheck/lint/24テスト/build合格、実ブラウザーで8状態撮影。実GPU計測と独立レビュー（PROMPT_02）が残件 |
 | M2-01 | BLOCKED | Human decision | 外部1サービスの読取専用連携を指定・認証 |
 
 状態: TODO/READY/IN_PROGRESS/BLOCKED/VERIFY/DONE。作業前に担当ブランチ/対象ファイルを`HANDOFF.md`へ記録。

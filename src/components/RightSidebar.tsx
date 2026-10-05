@@ -1,93 +1,88 @@
 "use client";
 
 import React from "react";
-import { AgentInfo, BusinessSummary } from "../contracts";
+import type { ApprovalItem, BusinessSummary, MorningBriefing, SourceEventEnvelope } from "../contracts";
+import { HudPanel } from "./HudPanel";
+import { SECTION_LABEL, briefItemText, jstDateTime, jstTime, yen } from "./demoText";
 
 interface RightSidebarProps {
+  approval: ApprovalItem | undefined;
+  order: SourceEventEnvelope | undefined;
+  briefing: MorningBriefing;
+  briefReady: boolean;
+  briefNote: string;
   summary: BusinessSummary;
-  agents: AgentInfo[];
-  modelRequestsCount: number;
-  pendingApprovalsCount: number;
-  onReviewPriorityAction: () => void;
+  /** False during SSR: fixture expiry is computed per process, so render it on the client only. */
+  clientReady: boolean;
+  decisionRef?: React.Ref<HTMLElement>;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+  onOpenEvidence: () => void;
+  onOpenBriefing: () => void;
+  onOpenNumbers: () => void;
 }
 
-export function RightSidebar({
-  summary,
-  agents,
-  modelRequestsCount,
-  pendingApprovalsCount,
-  onReviewPriorityAction,
-}: RightSidebarProps) {
+const STATUS_TEXT: Record<ApprovalItem["status"], string> = {
+  pending: "確認待ち", approved: "模擬承認済み", rejected: "見送り済み", expired: "期限切れ", cancelled: "取消",
+};
+
+export function RightSidebar({ approval, order, briefing, briefReady, briefNote, summary, clientReady, decisionRef, onApprove, onReject, onOpenEvidence, onOpenBriefing, onOpenNumbers }: RightSidebarProps) {
+  const est = order?.data.estimated_shipping_minor;
+  const quoted = order?.data.quoted_shipping_minor;
+  const diff = typeof est === "number" && typeof quoted === "number" ? quoted - est : null;
+  const ratio = typeof est === "number" && typeof quoted === "number" && quoted > 0 ? (est / quoted) * 100 : 100;
+  const pending = approval?.status === "pending";
   return (
-    <aside className="side-column right-column" aria-label="業務概要とエージェント">
-      <section className="glass-block action-panel">
-        <h2 className="block-title">今、人が確認すること</h2>
-        <span className="pill-tag">{pendingApprovalsCount > 0 ? `模擬承認待ち · ${pendingApprovalsCount}件` : "模擬判断を記録済み"}</span>
-        <h3>配送費の差額</h3>
-        <p className="action-difference">¥900 <span>→</span> ¥1,550</p>
-        <p>サンプル注文の送料が想定より¥650高くなっています。{pendingApprovalsCount > 0 ? "判断を記録しても、発注・支払い・出荷は行いません。" : "模擬判断は履歴に記録され、外部操作はありません。"}</p>
-        <button className="cyber-btn gold" onClick={onReviewPriorityAction} aria-label="配送費の模擬レビューを開く">{pendingApprovalsCount > 0 ? "内容と根拠を確認 →" : "記録を確認 →"}</button>
-      </section>
-      <section className="glass-block">
-        <h2 className="block-title">
-          今日の概況 <span className="pill-tag">DEMO</span>
-        </h2>
-        <div className="metric-row primary-metric">
-          <span>
-            注文額の例
-            <br />
-            <em>サンプル値 · 実際の売上ではありません</em>
-          </span>
-          <b>
-            {summary.order_revenue_currency === "JPY" ? "¥" : "$"}
-            {summary.order_revenue_minor.toLocaleString()}
-          </b>
-        </div>
-        <div className="metric-row">
-          <span>サンプル注文</span>
-          <b>{summary.example_orders_count < 10 ? `0${summary.example_orders_count}` : summary.example_orders_count}</b>
-        </div>
-        <div className="metric-row">
-          <span>MIX問い合わせの例</span>
-          <b>{summary.mix_inquiries_count < 10 ? `0${summary.mix_inquiries_count}` : summary.mix_inquiries_count}</b>
-        </div>
-        <div className="metric-row" style={{ marginBottom: 0 }}>
-          <span>配送費の確認</span>
-          <b className="color-amber">
-            {summary.shipping_alerts_count < 10 ? `0${summary.shipping_alerts_count}` : summary.shipping_alerts_count}
-          </b>
-        </div>
-        <div className="divider-line" style={{ marginTop: "18px" }} />
-        <div className="mini-meta">
-          <span>実サービスの最終同期</span>
-          <span>{summary.last_verified_sync === "NEVER" ? "なし" : summary.last_verified_sync}</span>
-        </div>
-      </section>
-
-      <section className="glass-block">
-        <h2 className="block-title">実行状況 <span className="block-subtitle">デモ</span></h2>
-        {agents.map((ag) => (
-          <div key={ag.id} className="source-item">
-            <span>{ag.id === "commerce" ? "販売" : ag.id === "creative" ? "制作" : ag.id === "assistant" ? "予定と支援" : ag.name}</span>
-            <span className={ag.idle ? "status-off" : "status-on"}>
-              {ag.idle ? "デモ · 待機中" : ag.statusText}
-            </span>
+    <aside className="hud-col hud-right" aria-label="判断と報告">
+      {approval && (
+        <HudPanel tone="decision" panelRef={decisionRef} tabIndex={-1} aria-labelledby="decision-title">
+          <div className="dec-label"><span>{pending ? "判断が必要 · 1件" : "記録済み"}</span><span className="hp-code">期限 {clientReady ? jstDateTime(approval.expires_at) : "--/-- --:--"}</span></div>
+          <h3 id="decision-title">サンプル注文の配送費差額</h3>
+          <div className="diff">
+            <div><div className="cap">見積</div><div className="n">{yen(est)}</div></div>
+            <div className="arr" aria-hidden="true">→</div>
+            <div><div className="cap">請求{diff !== null && ` · +${yen(diff)}`}</div><div className="n to">{yen(quoted)}</div></div>
           </div>
-        ))}
-        <div className="divider-line" />
-        <div className="mini-meta">
-          <span>モデル呼び出し</span>
-          <span>{modelRequestsCount}</span>
+          <div className="meter" aria-hidden="true"><i style={{ width: `${ratio}%` }} /><b style={{ left: `${ratio}%` }} /></div>
+          <dl className="facts">
+            <dt>対象</dt><dd>{approval.account}</dd>
+            <dt>注文</dt><dd className="mono">{approval.target_id} · {yen(approval.amount_cap_minor)}（例示）</dd>
+            <dt>状態</dt><dd>{pending ? STATUS_TEXT.pending : <span className="done-stamp">{STATUS_TEXT[approval.status]}{approval.reviewed_at && ` · ${jstTime(approval.reviewed_at)}`}</span>}</dd>
+          </dl>
+          <div className="acts">
+            {pending && <>
+              <button className="btn gold" onClick={() => onApprove(approval.intent_id)}>模擬承認する</button>
+              <button className="btn ghost" onClick={() => onReject(approval.intent_id)}>見送る</button>
+            </>}
+            <button className="btn ghost" onClick={onOpenEvidence}>根拠を見る</button>
+          </div>
+          <p className="fine">記録しても発注・支払い・出荷は行いません。音声の「はい」では確定しません。</p>
+        </HudPanel>
+      )}
+      <HudPanel title="朝の報告" code={briefReady ? `出典 · ${jstTime(briefing.generated_at)} 作成` : "未作成"}>
+        {briefReady ? (
+          <>
+            <ul className="brief">
+              {briefing.sections.flatMap((sec) => sec.items.map((item) => (
+                <li key={item.id}>
+                  <span className={`kind${sec.kind === "anomalies" ? " alert" : ""}`}>{SECTION_LABEL[sec.kind]}</span>
+                  <div><p>{briefItemText(item)}</p><span className="src">{item.source}</span></div>
+                </li>
+              )))}
+            </ul>
+            <button className="link-btn" onClick={onOpenBriefing}>報告の詳細を開く</button>
+          </>
+        ) : <p className="muted">{briefNote}</p>}
+      </HudPanel>
+      <HudPanel title="事業の数字" code="サンプル値">
+        <div className="nums">
+          <div><span>注文額の例</span><b>{yen(summary.order_revenue_minor)}</b></div>
+          <div><span>MIX問い合わせ</span><b>{summary.mix_inquiries_count}<small>件</small></b></div>
+          <div><span>利益</span><b className="unk">{summary.net_profit_status === "UNKNOWN" ? "不明" : summary.net_profit_status === "ESTIMATED" ? "推定" : "計算済み"}</b></div>
+          <div><span>実データ同期</span><b className="unk">{summary.last_verified_sync === "NEVER" ? "なし" : summary.last_verified_sync}</b></div>
         </div>
-        <div className="progress-track" aria-hidden="true">
-          <span className="progress-fill" />
-        </div>
-        <div className="mini-meta">
-          <span>実サービス操作</span>
-          <span className="color-amber">無効</span>
-        </div>
-      </section>
-
+        <button className="link-btn" onClick={onOpenNumbers}>事業別の数字を開く</button>
+      </HudPanel>
     </aside>
   );
 }

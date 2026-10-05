@@ -3,6 +3,7 @@
 import React from "react";
 import { MorningBriefing, TaskRun } from "../contracts";
 import { useDialogFocus } from "../lib/useDialogFocus";
+import { SECTION_LABEL, briefItemText, jstDateTime } from "./demoText";
 
 interface BriefingModalProps {
   briefing: MorningBriefing;
@@ -70,8 +71,8 @@ export function BriefingModal({
           <ol>
             {briefing.sections.map((sec) => (
               <li key={sec.kind}>
-                <b>{sec.title}:</b>{" "}
-                {sec.items.map((it) => `${it.headline} [${it.source}]`).join(" / ")}
+                <b>{SECTION_LABEL[sec.kind]}:</b>{" "}
+                {sec.items.map((it) => `${briefItemText(it)}（出典 ${it.source}）`).join(" / ")}
               </li>
             ))}
           </ol>
@@ -94,10 +95,10 @@ export function BriefingModal({
         </div>
 
         <div className="tiny-label" style={{ marginTop: "16px" }}>
-          出典: ローカルfixture · DEMO · 生成時刻: {briefing.generated_at}
+          出典: ローカルfixture · DEMO · 生成時刻: {jstDateTime(briefing.generated_at)} JST
         </div>
         </>}
-        <p style={{ marginTop: "12px", fontSize: "11px", color: "#7b9bb1" }}>
+        <p className="modal-foot">
           ローカルのサンプルのみ · 実サービスへの書込みなし
         </p>
       </div>
